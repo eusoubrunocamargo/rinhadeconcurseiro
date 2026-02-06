@@ -1,0 +1,40 @@
+# ========================
+# IDE
+# ========================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# BACKEND (Java/Maven)
+# ========================
+backend/target/
+backend/*.jar
+backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# ========================
+# FRONTEND (Node/React)
+# ========================
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# ========================
+# LOGS
+# ========================
+*.log
+npm-debug.log*
