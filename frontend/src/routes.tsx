@@ -1,22 +1,34 @@
 import { Routes, Route } from 'react-router-dom';
 
-// Pages (criaremos em seguida)
+// Components
+import ProtectedRoute from './components/common/ProtectedRoute';
+
+// Pages
 import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 
 export default function AppRoutes() {
   return (
     <Routes>
       {/* Rotas Públicas */}
       <Route path="/" element={<Home />} />
-      
+
+      {/* Rotas Protegidas */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 
-        Rotas futuras (descomentar conforme implementar):
+        Rotas futuras:
         
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/simulados" element={<SimuladosList />} />
-        <Route path="/simulados/:id" element={<SimuladoPlay />} />
-        <Route path="/simulados/:id/resultado" element={<SimuladoResultado />} />
+        <Route path="/simulados" element={<ProtectedRoute><SimuladosList /></ProtectedRoute>} />
+        <Route path="/simulados/:id" element={<ProtectedRoute><SimuladoPlay /></ProtectedRoute>} />
+        <Route path="/simulados/:id/resultado" element={<ProtectedRoute><SimuladoResultado /></ProtectedRoute>} />
       */}
     </Routes>
   );
