@@ -17,8 +17,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-
+  
   # OAuth2 (configuraremos depois)
   security:
     oauth2:
@@ -40,3 +39,8 @@ logging:
 # Servidor
 server:
   port: 8080
+
+# Frontend URL 
+app:
+  frontend:
+    url: http://localhost:5173
