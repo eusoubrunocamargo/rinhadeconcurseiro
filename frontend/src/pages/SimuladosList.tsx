@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { Simulado } from '../types';
 import { getSimulados } from '../services/simulado';
 import Layout from '../components/layout/Layout';
+import { Link } from 'react-router-dom';
+
 
 export default function SimuladosList() {
   const [simulados, setSimulados] = useState<Simulado[]>([]);
@@ -56,7 +58,7 @@ export default function SimuladosList() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {simulados.map((simulado) => (
             
-            <a key={simulado.id} href={`/simulados/${simulado.id}`}
+            <Link key={simulado.id} to={`/simulados/${simulado.id}`}
               className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
             >
               <h2 className="font-semibold text-gray-800 mb-2">
@@ -73,7 +75,7 @@ export default function SimuladosList() {
                   Iniciar
                 </span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       )}

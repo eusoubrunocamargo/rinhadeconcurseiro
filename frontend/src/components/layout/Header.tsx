@@ -1,4 +1,5 @@
 import { useAuth } from '../../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -8,35 +9,35 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/dashboard" className="flex items-center gap-2">
+          <Link to="/dashboard" className="flex items-center gap-2">
             <span className="text-2xl">🏆</span>
             <span className="font-bold text-gray-800 hidden sm:inline">
               Rinha de Concurseiro
             </span>
-          </a>
+          </Link>
 
           {/* Navegação Central */}
           <nav className="hidden md:flex items-center gap-6">
             
-            <a href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
             >
               Início
-            </a>
+            </Link>
             
-            <a href="/simulados" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            <Link to="/simulados" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
             >
               Simulados
-            </a>
+            </Link>
             
-            <a href="/ranking" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            <Link to="/ranking" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
             >
               Ranking
-            </a>
+            </Link>
           </nav>
 
           {/* Usuário */}
           <div className="flex items-center gap-4">
-            <a href="/perfil" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Link to="/perfil" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               {user?.fotoUrl ? (
                 <img
                   src={user.fotoUrl}
@@ -51,7 +52,7 @@ export default function Header() {
               <span className="text-gray-700 text-sm hidden sm:inline">
                 {user?.apelido || user?.nome?.split(' ')[0]}
               </span>
-            </a>
+            </Link>
 
             <button
               onClick={logout}

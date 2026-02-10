@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -7,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import SimuladosList from './pages/SimuladosList';
 import SimuladoPlay from './pages/SimuladoPlay';
+import SimuladoResult from './pages/SimuladoResult';
 
 export default function AppRoutes() {
   return (
@@ -50,6 +52,15 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/simulados/:id/resultado"
+        element={
+          <ProtectedRoute>
+            <SimuladoResult />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/ranking"
         element={
           <ProtectedRoute>
@@ -79,11 +90,11 @@ function ComingSoon({ title }: { title: string }) {
         <span className="text-6xl mb-4 block">🚧</span>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">{title}</h1>
         <p className="text-gray-600 mb-4">Em construção</p>
-        
-        <a href="/dashboard" className="text-blue-600 hover:text-blue-700 font-medium"
+
+        <Link to="/dashboard" className="text-blue-600 hover:text-blue-700 font-medium"
         >
           Voltar ao início
-        </a>
+        </Link>
       </div>
     </div>
   );
