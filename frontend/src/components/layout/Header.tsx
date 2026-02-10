@@ -18,22 +18,25 @@ export default function Header() {
           {/* Navegação Central */}
           <nav className="hidden md:flex items-center gap-6">
             
-            <a href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+            <a href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
               Início
             </a>
             
-            <a href="/simulados" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+            <a href="/simulados" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
               Simulados
             </a>
             
-            <a href="/ranking" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+            <a href="/ranking" className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
               Ranking
             </a>
           </nav>
 
           {/* Usuário */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
+            <a href="/perfil" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               {user?.fotoUrl ? (
                 <img
                   src={user.fotoUrl}
@@ -48,7 +51,7 @@ export default function Header() {
               <span className="text-gray-700 text-sm hidden sm:inline">
                 {user?.apelido || user?.nome?.split(' ')[0]}
               </span>
-            </div>
+            </a>
 
             <button
               onClick={logout}

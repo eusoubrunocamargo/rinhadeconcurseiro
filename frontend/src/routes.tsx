@@ -6,6 +6,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 // Pages
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/perfil"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
@@ -67,7 +77,7 @@ function ComingSoon({ title }: { title: string }) {
         <p className="text-gray-600 mb-4">Em construção</p>
         
         <a href="/dashboard" className="text-blue-600 hover:text-blue-700 font-medium">
-          ← Voltar ao início
+          Voltar ao início
         </a>
       </div>
     </div>
