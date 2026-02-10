@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import SimuladosList from './pages/SimuladosList';
+import SimuladoPlay from './pages/SimuladoPlay';
 
 export default function AppRoutes() {
   return (
@@ -35,6 +36,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <SimuladosList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/simulados/:id"
+        element={
+          <ProtectedRoute>
+            <SimuladoPlay />
           </ProtectedRoute>
         }
       />

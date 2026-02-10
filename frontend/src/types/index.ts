@@ -5,28 +5,10 @@ export interface User {
   id: number;
   email: string;
   nome: string;
-  fotoPerfil?: string;
-  criadoEm: string;
-  atualizadoEm: string;
-}
-
-// ============================================
-// QUESTÃO
-// ============================================
-export interface Questao {
-  id: number;
-  textoMotivador?: string;
-  comando?: string;
-  textoQuestao: string;
-  gabarito: boolean;
-  justificativa?: string;
-  materia: string;
-  assunto?: string;
-  ano?: number;
-  banca?: string;
-  orgao?: string;
-  imagemUrl?: string;
-  hasLatex: boolean;
+  apelido?: string;
+  fotoUrl?: string;
+  createdAt: string;
+  ultimoAcesso?: string;
 }
 
 // ============================================
@@ -34,17 +16,25 @@ export interface Questao {
 // ============================================
 export interface Simulado {
   id: number;
-  nome: string;
-  descricao?: string;
+  numero: number;
+  titulo: string;
+  dataDisponivel: string;
   totalQuestoes: number;
-  criadoEm: string;
+  questoesBasicas: number;
+  questoesEspecificas: number;
 }
 
 export interface SimuladoQuestao {
   id: number;
-  simuladoId: number;
-  questao: Questao;
   ordem: number;
+  caderno: 'BASICO' | 'ESPECIFICO';
+  questaoId: number;
+  materiaNome: string;
+  assuntoNome?: string;
+  comando?: string;
+  enunciado: string;
+  imagemUrl?: string;
+  gabarito: 'CERTO' | 'ERRADO';
 }
 
 export interface SimuladoDetalhado extends Simulado {
@@ -52,11 +42,11 @@ export interface SimuladoDetalhado extends Simulado {
 }
 
 // ============================================
-// RESPOSTAS E RESULTADO (para Etapa F7)
+// RESPOSTAS E RESULTADO
 // ============================================
 export interface RespostaUsuario {
   questaoId: number;
-  resposta: boolean | null; // true = Certo, false = Errado, null = Em branco
+  resposta: boolean | null;
 }
 
 export interface ResultadoSimulado {
@@ -65,6 +55,6 @@ export interface ResultadoSimulado {
   acertos: number;
   erros: number;
   emBranco: number;
-  pontuacao: number; // CEBRASPE: acertos - erros
+  pontuacao: number;
   percentualAcerto: number;
 }

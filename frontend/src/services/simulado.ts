@@ -7,6 +7,6 @@ export async function getSimulados(): Promise<Simulado[]> {
 }
 
 export async function getSimuladoById(id: number): Promise<SimuladoDetalhado> {
-  const response = await api.get<SimuladoDetalhado>(`/api/v1/simulados/${id}`);
+  const response = await api.get<SimuladoDetalhado>(`/api/v1/simulados/${id}/detalhes`);
   return response.data;
 }

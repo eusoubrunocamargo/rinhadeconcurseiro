@@ -56,21 +56,21 @@ export default function SimuladosList() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {simulados.map((simulado) => (
             
-            <a key={simulado.id} href={`/simulados/${simulado.id}`} className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <a key={simulado.id} href={`/simulados/${simulado.id}`}
+              className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+            >
               <h2 className="font-semibold text-gray-800 mb-2">
-                {simulado.nome}
+                {simulado.titulo}
               </h2>
-              {simulado.descricao && (
-                <p className="text-sm text-gray-500 mb-4">
-                  {simulado.descricao}
-                </p>
-              )}
+              <p className="text-sm text-gray-500 mb-4">
+                Simulado #{simulado.numero}
+              </p>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">
                   {simulado.totalQuestoes} questões
                 </span>
                 <span className="text-blue-600 font-medium">
-                  Iniciar →
+                  Iniciar
                 </span>
               </div>
             </a>
