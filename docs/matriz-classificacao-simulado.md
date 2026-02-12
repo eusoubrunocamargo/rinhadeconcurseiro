@@ -169,3 +169,213 @@ Isso permite ranking dentro do caderno para ordenar revisões.
 - Percentual de “acerto por chute”
 - Distribuição de erros por tipo (`conteúdo`, `interpretação`, `distração`)
 - Redução de itens no caderno vermelho ao longo do tempo
+
+---
+
+## Backend ideal para persistência (arquitetura recomendada)
+
+Esta seção detalha a implementação para o fluxo em 3 etapas:
+
+1. Usuário responde o simulado + marca nível de certeza.
+2. Usuário finaliza o simulado e informa autofeedback apenas dos erros.
+3. Sistema consolida classificação e persiste as questões nos cadernos.
+
+### Princípios de desenho
+
+- **Estado explícito por tentativa de simulado** (`IN_PROGRESS`, `AWAITING_FEEDBACK`, `COMPLETED`).
+- **Persistência incremental** (salvar resposta por questão durante o simulado).
+- **Consolidação transacional** ao finalizar autofeedback (classificação + cadernos no mesmo commit).
+- **Idempotência** para evitar duplicidade em reenvio de requisição.
+- **Rastreabilidade**: manter snapshot de regra/versão usada na classificação.
+
+### Modelo de domínio (entidades)
+
+1. `simulation_attempt`
+   - Representa a tentativa do usuário em um simulado.
+   - Campos: `id`, `user_id`, `simulation_id`, `status`, `started_at`, `finished_at`, `feedback_finished_at`, `rule_version`.
+
+2. `simulation_attempt_question`
+   - Uma linha por questão da tentativa.
+   - Campos: `attempt_id`, `question_id`, `marked_answer`, `confidence_level`, `official_answer`, `is_correct`, `responded_at`.
+
+3. `simulation_attempt_feedback`
+   - Autofeedback para questões erradas.
+   - Campos: `attempt_id`, `question_id`, `error_type`, `created_at`.
+
+4. `simulation_attempt_classification`
+   - Resultado final da classificação por questão.
+   - Campos: `attempt_id`, `question_id`, `result_type`, `notebook`, `criticality_score`, `classified_at`, `rule_version_snapshot`.
+
+5. `user_notebook_item`
+   - Materializa o caderno do usuário.
+   - Campos: `id`, `user_id`, `question_id`, `notebook`, `source_attempt_id`, `first_added_at`, `last_added_at`, `review_status`, `next_review_at`, `times_reinforced`.
+
+6. `outbox_event` (opcional, recomendado)
+   - Publicação confiável de eventos de domínio.
+   - Campos: `id`, `aggregate_type`, `aggregate_id`, `event_type`, `payload_json`, `created_at`, `processed_at`.
+
+### Esquema relacional sugerido (PostgreSQL)
+
+```sql
+create table simulation_attempt (
+  id uuid primary key,
+  user_id uuid not null,
+  simulation_id uuid not null,
+  status varchar(32) not null check (status in ('IN_PROGRESS','AWAITING_FEEDBACK','COMPLETED')),
+  rule_version varchar(16) not null default 'v1',
+  started_at timestamptz not null,
+  finished_at timestamptz,
+  feedback_finished_at timestamptz,
+  unique (user_id, id)
+);
+
+create table simulation_attempt_question (
+  attempt_id uuid not null references simulation_attempt(id) on delete cascade,
+  question_id uuid not null,
+  marked_answer varchar(8) not null check (marked_answer in ('certo','errado')),
+  confidence_level varchar(16) not null check (confidence_level in ('certeza','dúvida','chute')),
+  official_answer varchar(8) not null check (official_answer in ('certo','errado')),
+  is_correct boolean generated always as (marked_answer = official_answer) stored,
+  responded_at timestamptz not null,
+  primary key (attempt_id, question_id)
+);
+
+create table simulation_attempt_feedback (
+  attempt_id uuid not null,
+  question_id uuid not null,
+  error_type varchar(32) not null check (error_type in ('conteúdo','interpretação','distração')),
+  created_at timestamptz not null,
+  primary key (attempt_id, question_id),
+  foreign key (attempt_id, question_id)
+    references simulation_attempt_question(attempt_id, question_id)
+    on delete cascade
+);
+
+create table simulation_attempt_classification (
+  attempt_id uuid not null,
+  question_id uuid not null,
+  result_type varchar(32) not null,
+  notebook varchar(16) not null check (notebook in ('vermelho','amarelo','verde')),
+  criticality_score int not null default 0,
+  rule_version_snapshot varchar(16) not null,
+  classified_at timestamptz not null,
+  primary key (attempt_id, question_id),
+  foreign key (attempt_id, question_id)
+    references simulation_attempt_question(attempt_id, question_id)
+    on delete cascade
+);
+
+create table user_notebook_item (
+  id uuid primary key,
+  user_id uuid not null,
+  question_id uuid not null,
+  notebook varchar(16) not null check (notebook in ('vermelho','amarelo','verde')),
+  source_attempt_id uuid not null references simulation_attempt(id),
+  first_added_at timestamptz not null,
+  last_added_at timestamptz not null,
+  review_status varchar(24) not null default 'PENDING',
+  next_review_at timestamptz,
+  times_reinforced int not null default 1,
+  unique (user_id, question_id, notebook)
+);
+```
+
+### Contratos de API (REST)
+
+#### 1) Iniciar tentativa
+- `POST /api/simulations/{simulationId}/attempts`
+- Saída: `attemptId`, `status=IN_PROGRESS`, lista de questões (ou paginação).
+
+#### 2) Salvar resposta da questão (durante prova)
+- `PUT /api/attempts/{attemptId}/questions/{questionId}/answer`
+- Payload:
+
+```json
+{
+  "markedAnswer": "certo",
+  "confidenceLevel": "dúvida"
+}
+```
+
+- Regra: upsert por `(attempt_id, question_id)`.
+
+#### 3) Finalizar prova (sem autofeedback ainda)
+- `POST /api/attempts/{attemptId}/finish`
+- Ações:
+  - valida que todas as questões têm resposta + confiança;
+  - calcula score/acertos;
+  - muda status para `AWAITING_FEEDBACK`;
+  - retorna questões erradas pendentes de autofeedback.
+
+#### 4) Salvar autofeedback de uma questão errada
+- `PUT /api/attempts/{attemptId}/questions/{questionId}/feedback`
+- Payload:
+
+```json
+{
+  "errorType": "conteúdo"
+}
+```
+
+- Regra: só aceita se questão estiver errada.
+
+#### 5) Finalizar autofeedback e classificar
+- `POST /api/attempts/{attemptId}/feedback/finish`
+- Cabeçalho recomendado: `Idempotency-Key`.
+- Ações transacionais:
+  1. valida que toda questão errada possui `errorType`;
+  2. aplica matriz de classificação por questão;
+  3. grava `simulation_attempt_classification`;
+  4. atualiza/insere em `user_notebook_item`;
+  5. marca tentativa como `COMPLETED`.
+
+### Serviço de aplicação (orquestração)
+
+`SimulationAttemptService`
+- `startAttempt(userId, simulationId)`
+- `saveAnswer(attemptId, questionId, markedAnswer, confidenceLevel)`
+- `finishAttempt(attemptId)`
+- `saveFeedback(attemptId, questionId, errorType)`
+- `finishFeedback(attemptId, idempotencyKey)`
+
+`ClassificationService`
+- Implementa regra determinística deste documento.
+- Assinatura sugerida:
+  - `ClassificationResult classify(AttemptQuestion q, ErrorType feedback, RuleVersion ruleVersion)`
+
+`NotebookService`
+- Upsert em `user_notebook_item` com política de prioridade:
+  - se questão já estiver no vermelho, não rebaixar para amarelo automaticamente;
+  - se subir de amarelo para vermelho, promover imediatamente.
+
+### Regras de consistência (importantes)
+
+- Não permitir `finishAttempt` se faltar `confidenceLevel` em qualquer questão.
+- Não permitir `feedback` para questão correta.
+- Não permitir `finishFeedback` se houver erro sem `errorType`.
+- `simulation_attempt_classification` só existe após `feedback/finish`.
+- Todas as gravações finais devem ocorrer em **uma transação**.
+
+### Estratégia de concorrência e idempotência
+
+- `@Version` (optimistic locking) em `simulation_attempt`.
+- `Idempotency-Key` armazenada em tabela `request_idempotency` para `feedback/finish`.
+- Em caso de retry, retornar o mesmo resultado já consolidado.
+
+### Observabilidade e auditoria
+
+- Logar transições de estado da tentativa.
+- Persistir `rule_version_snapshot` por questão classificada.
+- Expor métricas:
+  - tempo médio para concluir feedback,
+  - % de tentativas com feedback completo,
+  - distribuição por caderno.
+
+### Estratégia de implementação incremental
+
+1. **MVP**
+   - tabelas principais + fluxo completo sem `outbox_event`.
+2. **V2**
+   - adicionar `criticality_score` e ordenação por prioridade.
+3. **V3**
+   - adicionar revisão espaçada automática (`next_review_at`) e eventos assíncronos.
