@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import type { SimuladoDetalhado, RespostaUsuario } from '../types';
+import type { SimuladoDetalhado, RespostaUsuario, NivelConfianca } from '../types';
 import { getSimuladoById } from '../services/simulado';
 import Layout from '../components/layout/Layout';
 import QuestaoCard from '../components/ui/QuestaoCard';
@@ -10,7 +10,7 @@ export default function SimuladoPlay() {
   const navigate = useNavigate();
 
   const [simulado, setSimulado] = useState<SimuladoDetalhado | null>(null);
-  const [respostas, setRespostas] = useState<Map<number, boolean | null>>(new Map());
+  const [respostas, setRespostas] = useState<Map<number, { resposta: boolean | null; confianca: NivelConfianca | null }>>(new Map());
   const [questaoAtual, setQuestaoAtual] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +38,19 @@ export default function SimuladoPlay() {
       if (valor === null) {
         novo.delete(questaoId);
       } else {
-        novo.set(questaoId, valor);
+        const atual = novo.get(questaoId);
+        novo.set(questaoId, { resposta: valor, confianca: atual?.confianca ?? null });
+      }
+      return novo;
+    });
+  }
+
+  function handleConfianca(questaoId: number, valor: NivelConfianca) {
+    setRespostas((prev) => {
+      const novo = new Map(prev);
+      const atual = novo.get(questaoId);
+      if (atual) {
+        novo.set(questaoId, { ...atual, confianca: valor });
       }
       return novo;
     });
@@ -47,10 +59,14 @@ export default function SimuladoPlay() {
   function handleFinalizar() {
     if (!simulado) return;
 
-    const respostasArray: RespostaUsuario[] = simulado.questoes.map((sq) => ({
-      questaoId: sq.questaoId,
-      resposta: respostas.get(sq.questaoId) ?? null,
-    }));
+    const respostasArray: RespostaUsuario[] = simulado.questoes.map((sq) => {
+      const r = respostas.get(sq.questaoId);
+      return {
+        questaoId: sq.questaoId,
+        resposta: r?.resposta ?? null,
+        confianca: r?.confianca ?? null,
+      };
+    });
 
     sessionStorage.setItem(`resultado_${id}`, JSON.stringify({
       simulado,
@@ -106,8 +122,10 @@ export default function SimuladoPlay() {
         comando={questaoAtualData.comando}
         materia={questaoAtualData.materiaNome}
         assunto={questaoAtualData.assuntoNome}
-        resposta={respostas.get(questaoAtualData.questaoId) ?? null}
+        resposta={respostas.get(questaoAtualData.questaoId)?.resposta ?? null}
+        confianca={respostas.get(questaoAtualData.questaoId)?.confianca ?? null}
         onResponder={(valor) => handleResponder(questaoAtualData.questaoId, valor)}
+        onConfianca={(valor) => handleConfianca(questaoAtualData.questaoId, valor)}
       />
 
       {/* Navegação */}
@@ -120,22 +138,30 @@ export default function SimuladoPlay() {
           Anterior
         </button>
 
-        <div className="flex gap-2 overflow-x-auto max-w-md">
-          {simulado.questoes.map((sq, index) => (
-            <button
-              key={sq.id}
-              onClick={() => setQuestaoAtual(index)}
-              className={`w-8 h-8 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                index === questaoAtual
-                  ? 'bg-blue-600 text-white'
-                  : respostas.has(sq.questaoId)
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
+        <div className="flex gap-1.5 overflow-x-auto max-w-md py-1 px-1">
+          {simulado.questoes.map((sq, index) => {
+            const item = respostas.get(sq.questaoId);
+            const isAtual = index === questaoAtual;
+
+            let corClasse = 'bg-gray-100 text-gray-600 hover:bg-gray-200'; // não respondida
+            if (isAtual) {
+              corClasse = 'bg-blue-600 text-white';
+            } else if (item?.resposta === true) {
+              corClasse = 'bg-green-100 text-green-700'; // marcou CERTO
+            } else if (item?.resposta === false) {
+              corClasse = 'bg-red-100 text-red-700'; // marcou ERRADO
+            }
+
+            return (
+              <button
+                key={sq.id}
+                onClick={() => setQuestaoAtual(index)}
+                className={`min-w-8 h-8 px-2 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${corClasse}`}
+              >
+                {index + 1}
+              </button>
+            );
+          })}
         </div>
 
         <button

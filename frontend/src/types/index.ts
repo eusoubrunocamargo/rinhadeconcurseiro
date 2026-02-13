@@ -42,11 +42,19 @@ export interface SimuladoDetalhado extends Simulado {
 }
 
 // ============================================
+// CONFIANÇA E CLASSIFICAÇÃO
+// ============================================
+
+export type NivelConfianca = 'CERTEZA' | 'DUVIDA' | 'CHUTE';
+
+// ============================================
 // RESPOSTAS E RESULTADO
 // ============================================
+
 export interface RespostaUsuario {
   questaoId: number;
   resposta: boolean | null;
+  confianca: NivelConfianca | null;
 }
 
 export interface ResultadoSimulado {
