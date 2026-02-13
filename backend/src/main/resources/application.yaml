@@ -44,3 +44,5 @@ server:
 app:
   frontend:
     url: http://localhost:5173
+
+debug: true

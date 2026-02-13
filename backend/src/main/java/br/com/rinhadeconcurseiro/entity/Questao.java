@@ -43,7 +43,7 @@ public class Questao {
     private String enunciado;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "gabarito", nullable = false)
     private RespostaTipo gabarito;
 
     @Column(nullable = false)

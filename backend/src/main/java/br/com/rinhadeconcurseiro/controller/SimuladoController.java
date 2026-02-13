@@ -5,6 +5,7 @@ import br.com.rinhadeconcurseiro.dto.response.SimuladoQuestaoResponse;
 import br.com.rinhadeconcurseiro.dto.response.SimuladoResumoResponse;
 import br.com.rinhadeconcurseiro.enums.CadernoTipo;
 import br.com.rinhadeconcurseiro.service.SimuladoService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class SimuladoController {
      * Lista todos os simulados disponíveis (data <= hoje).
      */
     @GetMapping
-    public ResponseEntity<List<SimuladoResumoResponse>> listarDisponiveis() {
+    public ResponseEntity<@NonNull List<SimuladoResumoResponse>> listarDisponiveis() {
         List<SimuladoResumoResponse> simulados = simuladoService.listarDisponiveis();
         return ResponseEntity.ok(simulados);
     }
@@ -31,7 +32,7 @@ public class SimuladoController {
      * Busca o simulado do dia atual.
      */
     @GetMapping("/hoje")
-    public ResponseEntity<SimuladoResumoResponse> buscarSimuladoHoje() {
+    public ResponseEntity<@NonNull SimuladoResumoResponse> buscarSimuladoHoje() {
         SimuladoResumoResponse simulado = simuladoService.buscarSimuladoHoje();
         return ResponseEntity.ok(simulado);
     }
@@ -40,7 +41,7 @@ public class SimuladoController {
      * Busca o próximo simulado agendado.
      */
     @GetMapping("/proximo")
-    public ResponseEntity<SimuladoResumoResponse> buscarProximoSimulado() {
+    public ResponseEntity<@NonNull SimuladoResumoResponse> buscarProximoSimulado() {
         SimuladoResumoResponse simulado = simuladoService.buscarProximoSimulado();
         return ResponseEntity.ok(simulado);
     }
@@ -49,7 +50,7 @@ public class SimuladoController {
      * Busca simulado por ID.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<SimuladoResumoResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<@NonNull SimuladoResumoResponse> buscarPorId(@PathVariable Long id) {
         SimuladoResumoResponse simulado = simuladoService.buscarPorId(id);
         return ResponseEntity.ok(simulado);
     }
@@ -58,7 +59,7 @@ public class SimuladoController {
      * Busca simulado por ID com todas as questões.
      */
     @GetMapping("/{id}/detalhes")
-    public ResponseEntity<SimuladoDetalheResponse> buscarComQuestoes(@PathVariable Long id) {
+    public ResponseEntity<@NonNull SimuladoDetalheResponse> buscarComQuestoes(@PathVariable Long id) {
         SimuladoDetalheResponse simulado = simuladoService.buscarComQuestoes(id);
         return ResponseEntity.ok(simulado);
     }
@@ -68,7 +69,7 @@ public class SimuladoController {
      * Pode filtrar por caderno usando query param: ?caderno=BASICO ou ?caderno=ESPECIFICO
      */
     @GetMapping("/{id}/questoes")
-    public ResponseEntity<List<SimuladoQuestaoResponse>> buscarQuestoes(
+    public ResponseEntity<@NonNull List<SimuladoQuestaoResponse>> buscarQuestoes(
             @PathVariable Long id,
             @RequestParam(required = false) CadernoTipo caderno
     ) {
