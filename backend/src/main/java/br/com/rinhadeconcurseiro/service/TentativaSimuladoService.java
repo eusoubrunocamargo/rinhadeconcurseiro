@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -33,15 +34,33 @@ public class TentativaSimuladoService {
     //===========
 
     @Transactional
-    public TentativaIniciadaResponse iniciar(Long simuladoId, Long usuarioId) {
-        //verificar se já existe tentativa iniciada em andamento
-        tentativaRepository.findByUsuarioIdAndSimuladoIdAndFinalizadaFalse(
-                usuarioId,
-                simuladoId
-        ).ifPresent(t -> {
-            throw new IllegalStateException("Já existe uma tentativa em andamento para este simulado");
-        });
+    public TentativaIniciadaResponse iniciar(Long simuladoId, Long usuarioId, boolean refazer) {
+        // Verificar se já existe tentativa em andamento
+        Optional<TentativaSimulado> emAndamento = tentativaRepository
+                .findByUsuarioIdAndSimuladoIdAndFinalizadaFalse(usuarioId, simuladoId);
 
+        if (emAndamento.isPresent()) {
+            if (refazer) {
+                // Excluir APENAS a tentativa em andamento (não as finalizadas)
+                excluirTentativa(emAndamento.get());
+            } else {
+                // Retornar tentativa existente para continuar
+                TentativaSimulado tentativa = emAndamento.get();
+                Simulado simulado = tentativa.getSimulado();
+                return new TentativaIniciadaResponse(
+                        tentativa.getId(),
+                        simulado.getId(),
+                        simulado.getTitulo(),
+                        simulado.getTotalQuestoes(),
+                        tentativa.getDataInicio()
+                );
+            }
+        }
+
+        // IMPORTANTE: Não excluir tentativas finalizadas!
+        // Elas alimentam os cadernos e o histórico.
+
+        // Criar nova tentativa
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
@@ -64,6 +83,17 @@ public class TentativaSimuladoService {
                 simulado.getTotalQuestoes(),
                 tentativa.getDataInicio()
         );
+    }
+
+    // Sobrecarga para manter compatibilidade
+    @Transactional
+    public TentativaIniciadaResponse iniciar(Long simuladoId, Long usuarioId) {
+        return iniciar(simuladoId, usuarioId, false);
+    }
+
+    private void excluirTentativa(TentativaSimulado tentativa) {
+        respostaRepository.deleteByTentativaId(tentativa.getId());
+        tentativaRepository.delete(tentativa);
     }
 
     //===========
@@ -157,8 +187,9 @@ public class TentativaSimuladoService {
     }
 
     @Transactional(readOnly = true)
-    public List<TentativaResumoResponse> listarFinalizados(Long usuarioId){
-        return tentativaRepository.findByUsuarioIdAndFinalizadaTrueOrderByDataFimDesc(usuarioId)
+    public List<TentativaResumoResponse> listarFinalizados(Long usuarioId) {
+        // Buscar apenas a última tentativa finalizada de cada simulado
+        return tentativaRepository.findUltimasTentativasFinalizadasPorSimulado(usuarioId)
                 .stream()
                 .map(this::toResumoResponse)
                 .toList();
@@ -171,11 +202,12 @@ public class TentativaSimuladoService {
     }
 
     @Transactional(readOnly = true)
-    public MeuProgressoResponse obterProgresso(Long usuarioId){
+    public MeuProgressoResponse obterProgresso(Long usuarioId) {
         int emAndamento = tentativaRepository
                 .findByUsuarioIdAndFinalizadaFalseOrderByDataInicioDesc(usuarioId).size();
 
-        long finalizados = tentativaRepository.countByUsuarioIdAndFinalizadaTrue(usuarioId);
+        // Contar simulados DISTINTOS finalizados
+        long finalizados = tentativaRepository.countSimuladosDistintosFinalizados(usuarioId);
 
         Double media = tentativaRepository.calcularMediaAproveitamento(usuarioId);
 
@@ -190,7 +222,7 @@ public class TentativaSimuladoService {
     }
 
     @Transactional(readOnly = true)
-    public CadernoResumoResponse obterResumoCadernos(Long usuarioId){
+    public CadernoResumoResponse obterResumoCadernos(Long usuarioId) {
         List<Object[]> counts = respostaRepository.countByUsuarioIdGroupByCaderno(usuarioId);
 
         int vermelho = 0, amarelo = 0, verde = 0;
@@ -199,12 +231,14 @@ public class TentativaSimuladoService {
             Caderno caderno = (Caderno) row[0];
             Long count = (Long) row[1];
 
+            // Tratamento defensivo para caderno nulo
+            if (caderno == null) continue;
+
             switch (caderno) {
                 case VERMELHO -> vermelho = count.intValue();
                 case AMARELO -> amarelo = count.intValue();
                 case VERDE -> verde = count.intValue();
             }
-
         }
 
         return new CadernoResumoResponse(
@@ -301,13 +335,19 @@ public class TentativaSimuladoService {
 
     private TentativaResumoResponse toResumoResponse(TentativaSimulado t) {
         Simulado s = t.getSimulado();
-        int respondidas = t.getRespostas() == null ? 0 : t.getRespostas().size();
+
+        int respondidas = t.getRespostas() == null ? 0 :
+                (int) t.getRespostas().stream()
+                        .filter(r -> r.getResposta() != null && r.getResposta() != RespostaTipo.BRANCO)
+                        .count();
+
         Double percentual = null;
 
-        if (t.getFinalizada() && t.getAcertos() != null) {
-            int total = t.getAcertos() + t.getErros();
-            percentual = total > 0 ? (t.getAcertos() * 100.0) / total : 0.0;
+        if (t.getFinalizada() && t.getPontuacao() != null) {
+            // Aproveitamento CEBRASPE: pontuação líquida / total questões
+            percentual = (t.getPontuacao() * 100.0) / s.getTotalQuestoes();
         }
+
         return new TentativaResumoResponse(
                 t.getId(),
                 s.getId(),
@@ -326,21 +366,23 @@ public class TentativaSimuladoService {
         );
     }
 
-    private TentativaDetalheResponse toDetalheResponse(TentativaSimulado t){
+    private TentativaDetalheResponse toDetalheResponse(TentativaSimulado t) {
         Simulado s = t.getSimulado();
 
-        List<RespostaDetalheResponse> respostas = t.getRespostas().stream().map(this::toRespostaDetalheResponse).toList();
+        List<RespostaDetalheResponse> respostas = t.getRespostas() == null
+                ? List.of()
+                : t.getRespostas().stream().map(this::toRespostaDetalheResponse).toList();
 
         long vermelho = respostas.stream().filter(r -> r.caderno() == Caderno.VERMELHO).count();
         long amarelo = respostas.stream().filter(r -> r.caderno() == Caderno.AMARELO).count();
         long verde = respostas.stream().filter(r -> r.caderno() == Caderno.VERDE).count();
-        
+
         Double percentual = null;
-        if(t.getFinalizada() && t.getAcertos() != null){
-            int total = t.getAcertos() + t.getErros();
-            percentual = total > 0 ? (t.getAcertos() * 100.0) / total : 0.0;
+        if (t.getFinalizada() && t.getPontuacao() != null) {
+            // Aproveitamento CEBRASPE: pontuação líquida / total questões
+            percentual = (t.getPontuacao() * 100.0) / s.getTotalQuestoes();
         }
-        
+
         return new TentativaDetalheResponse(
                 t.getId(),
                 s.getId(),

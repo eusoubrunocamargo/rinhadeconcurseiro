@@ -29,11 +29,11 @@ public class TentativaSimuladoController {
     @PostMapping("/simulados/{simuladoId}/iniciar")
     public ResponseEntity<@NonNull TentativaIniciadaResponse> iniciar(
             @PathVariable Long simuladoId,
-            @AuthenticationPrincipal OidcUser oidcUser
-            ) {
+            @RequestParam(defaultValue = "false") boolean refazer,
+            @AuthenticationPrincipal OidcUser oidcUser) {
 
         Long usuarioId = getUsuarioId(oidcUser);
-        TentativaIniciadaResponse response = tentativaService.iniciar(simuladoId, usuarioId);
+        TentativaIniciadaResponse response = tentativaService.iniciar(simuladoId, usuarioId, refazer);
         return ResponseEntity.ok(response);
     }
 
