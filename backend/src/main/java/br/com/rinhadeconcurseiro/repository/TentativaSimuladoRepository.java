@@ -81,4 +81,60 @@ public interface TentativaSimuladoRepository extends JpaRepository<TentativaSimu
       )
 """)
     Double calcularMediaAproveitamento(@Param("usuarioId") Long usuarioId);
+
+    // Ranking por simulado (última tentativa de cada usuário)
+    @Query("""
+    SELECT t FROM TentativaSimulado t
+    JOIN FETCH t.usuario u
+    WHERE t.simulado.id = :simuladoId
+      AND t.finalizada = true
+      AND t.dataFim = (
+          SELECT MAX(t2.dataFim)
+          FROM TentativaSimulado t2
+          WHERE t2.usuario.id = t.usuario.id
+            AND t2.simulado.id = :simuladoId
+            AND t2.finalizada = true
+      )
+    ORDER BY t.pontuacao DESC, t.acertos DESC, t.dataFim ASC
+""")
+    List<TentativaSimulado> findRankingBySimuladoId(@Param("simuladoId") Long simuladoId);
+
+    // Ranking geral (soma de pontuações de todos os simulados - última tentativa de cada)
+    @Query("""
+    SELECT u.id, u.nome, u.apelido, u.fotoUrl,
+           SUM(t.pontuacao) as totalPontuacao,
+           SUM(t.acertos) as totalAcertos,
+           SUM(t.erros) as totalErros,
+           SUM(t.emBranco) as totalEmBranco,
+           COUNT(DISTINCT t.simulado.id) as simuladosFinalizados
+    FROM TentativaSimulado t
+    JOIN t.usuario u
+    WHERE t.finalizada = true
+      AND t.dataFim = (
+          SELECT MAX(t2.dataFim)
+          FROM TentativaSimulado t2
+          WHERE t2.usuario.id = t.usuario.id
+            AND t2.simulado.id = t.simulado.id
+            AND t2.finalizada = true
+      )
+    GROUP BY u.id, u.nome, u.apelido, u.fotoUrl
+    ORDER BY totalPontuacao DESC, totalAcertos DESC
+""")
+    List<Object[]> findRankingGeral();
+
+    // Contar participantes de um simulado
+    @Query("""
+    SELECT COUNT(DISTINCT t.usuario.id)
+    FROM TentativaSimulado t
+    WHERE t.simulado.id = :simuladoId AND t.finalizada = true
+""")
+    Integer countParticipantesBySimuladoId(@Param("simuladoId") Long simuladoId);
+
+    // Contar total de participantes (ranking geral)
+    @Query("""
+    SELECT COUNT(DISTINCT t.usuario.id)
+    FROM TentativaSimulado t
+    WHERE t.finalizada = true
+""")
+    Integer countParticipantesGeral();
 }

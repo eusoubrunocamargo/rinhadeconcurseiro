@@ -11,6 +11,8 @@ import java.util.Optional;
 @Repository
 public interface SimuladoRepository extends JpaRepository<Simulado, Long> {
 
+    List<Simulado> findByAtivoTrueOrderByNumeroAsc();
+
     Optional<Simulado> findByNumero(Integer numero);
 
     Optional<Simulado> findByDataDisponivelAndAtivoTrue(LocalDate data);

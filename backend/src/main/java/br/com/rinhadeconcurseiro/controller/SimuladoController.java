@@ -20,11 +20,12 @@ public class SimuladoController {
     private final SimuladoService simuladoService;
 
     /**
-     * Lista todos os simulados disponíveis (data <= hoje).
+     * Lista todos os simulados ativos (disponíveis e futuros).
+     * O frontend decide o que exibir baseado na data de disponibilidade.
      */
     @GetMapping
-    public ResponseEntity<@NonNull List<SimuladoResumoResponse>> listarDisponiveis() {
-        List<SimuladoResumoResponse> simulados = simuladoService.listarDisponiveis();
+    public ResponseEntity<@NonNull List<SimuladoResumoResponse>> listarTodos() {
+        List<SimuladoResumoResponse> simulados = simuladoService.listarTodos();
         return ResponseEntity.ok(simulados);
     }
 

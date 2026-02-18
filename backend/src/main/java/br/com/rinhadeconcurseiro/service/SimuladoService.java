@@ -37,6 +37,16 @@ public class SimuladoService {
     }
 
     /**
+     * Lista TODOS os simulados ativos (disponíveis e futuros), ordenados por número.
+     * O frontend decide o que exibir baseado na data.
+     */
+    public List<SimuladoResumoResponse> listarTodos() {
+        List<Simulado> simulados = simuladoRepository
+                .findByAtivoTrueOrderByNumeroAsc();
+        return simuladoMapper.toResumoResponseList(simulados);
+    }
+
+    /**
      * Busca o simulado do dia atual.
      */
     public SimuladoResumoResponse buscarSimuladoHoje() {
