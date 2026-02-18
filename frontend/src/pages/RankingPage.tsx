@@ -155,7 +155,7 @@ export default function RankingPage() {
 
       {/* Posição do Usuário Atual */}
       {ranking?.currentUserPosition && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+        <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
           <p className="text-sm text-blue-600 font-medium mb-2">Sua posição</p>
           <div className="flex items-center gap-4">
             <div className="flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-full font-bold text-lg">
