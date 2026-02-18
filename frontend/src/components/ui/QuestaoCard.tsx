@@ -8,8 +8,11 @@ interface QuestaoCardProps {
   assunto?: string;
   resposta: boolean | null;
   confianca: NivelConfianca | null;
+  confirmada: boolean;
   onResponder: (valor: boolean | null) => void;
   onConfianca: (valor: NivelConfianca) => void;
+  onConfirmar: () => void;
+  podeConfirmar: boolean;
 }
 
 export default function QuestaoCard({
@@ -19,20 +22,29 @@ export default function QuestaoCard({
   assunto,
   resposta,
   confianca,
+  confirmada,
   onResponder,
   onConfianca,
+  onConfirmar,
+  podeConfirmar,
 }: QuestaoCardProps) {
   const comandoSeguro = comando ? DOMPurify.sanitize(comando) : '';
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className={`bg-white rounded-xl shadow-sm p-6 ${confirmada ? 'ring-2 ring-green-200' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-blue-600">
-          Questão {numero}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-blue-600">Questão {numero}</span>
+          {confirmada && (
+            <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+              ✓ Confirmada
+            </span>
+          )}
+        </div>
         <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-          {materia}{assunto ? ` • ${assunto}` : ''}
+          {materia}
+          {assunto ? ` • ${assunto}` : ''}
         </span>
       </div>
 
@@ -81,7 +93,7 @@ export default function QuestaoCard({
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Certeza
+              😎 Certeza
             </button>
             <button
               onClick={() => onConfianca('DUVIDA')}
@@ -91,7 +103,7 @@ export default function QuestaoCard({
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Dúvida
+              🤔 Dúvida
             </button>
             <button
               onClick={() => onConfianca('CHUTE')}
@@ -101,12 +113,50 @@ export default function QuestaoCard({
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Chute
+              🎲 Chute
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Botão Confirmar - aparece quando resposta e confiança selecionadas */}
+      {resposta !== null && confianca !== null && (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          {confirmada ? (
+            <div className="text-center text-green-600 font-medium py-2">
+              ✓ Resposta confirmada! Use os botões acima para alterar.
+            </div>
+          ) : (
+            <button
+              onClick={onConfirmar}
+              disabled={!podeConfirmar}
+              className={`w-full py-3 rounded-lg font-medium transition-all ${
+                podeConfirmar
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 cursor-pointer shadow-md hover:shadow-lg'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              ✓ Confirmar e Avançar
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Dica de progresso */}
+      {resposta === null && (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-400 text-center">
+            Selecione CERTO ou ERRADO para continuar
+          </p>
+        </div>
+      )}
+      {resposta !== null && confianca === null && (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-400 text-center">
+            Agora selecione seu nível de confiança
+          </p>
         </div>
       )}
     </div>
   );
 }
-    

@@ -9,6 +9,9 @@ import Profile from './pages/Profile';
 import SimuladosList from './pages/SimuladosList';
 import SimuladoPlay from './pages/SimuladoPlay';
 import SimuladoResult from './pages/SimuladoResult';
+import SimuladoFeedback from './pages/SimuladoFeedback';
+import CadernoView from './pages/CadernoView';
+
 
 export default function AppRoutes() {
   return (
@@ -52,10 +55,28 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/simulados/:id/feedback"
+        element={
+          <ProtectedRoute>
+            <SimuladoFeedback />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/simulados/:id/resultado"
         element={
           <ProtectedRoute>
             <SimuladoResult />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/cadernos/:caderno"
+        element={
+          <ProtectedRoute>
+            <CadernoView />
           </ProtectedRoute>
         }
       />

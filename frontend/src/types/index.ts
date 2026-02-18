@@ -55,6 +55,7 @@ export interface RespostaUsuario {
   questaoId: number;
   resposta: boolean | null;
   confianca: NivelConfianca | null;
+  tipoErro?: TipoErro | null;
 }
 
 export interface ResultadoSimulado {
@@ -65,4 +66,124 @@ export interface ResultadoSimulado {
   emBranco: number;
   pontuacao: number;
   percentualAcerto: number;
+}
+
+// ============================================
+// ENUMS DE CLASSIFICAÇÃO
+// ============================================
+
+export type TipoErro = 'CONTEUDO' | 'INTERPRETACAO' | 'DISTRACAO';
+
+export type TipoResultado =
+  | 'ACERTO_CONSCIENTE'
+  | 'ACERTO_COM_DUVIDA'
+  | 'ACERTO_POR_CHUTE'
+  | 'ERRO_CONTEUDO'
+  | 'ERRO_INTERPRETACAO'
+  | 'ERRO_DISTRACAO';
+
+export type Caderno = 'VERMELHO' | 'AMARELO' | 'VERDE';
+
+// ============================================
+// API: TENTATIVAS
+// ============================================
+export interface TentativaIniciada {
+  tentativaId: number;
+  simuladoId: number;
+  simuladoTitulo: string;
+  totalQuestoes: number;
+  dataInicio: string;
+}
+
+export interface TentativaResumo {
+  id: number;
+  simuladoId: number;
+  simuladoNumero: number;
+  simuladoTitulo: string;
+  dataInicio: string;
+  dataFim?: string;
+  finalizada: boolean;
+  totalQuestoes: number;
+  respondidas: number;
+  acertos?: number;
+  erros?: number;
+  emBranco?: number;
+  pontuacao?: number;
+  percentualAcerto?: number;
+}
+
+export interface RespostaDetalhe {
+  id: number;
+  simuladoQuestaoId: number;
+  ordem: number;
+  questaoId: number;
+  materiaNome: string;
+  assuntoNome?: string;
+  comando?: string;
+  resposta: 'CERTO' | 'ERRADO' | 'BRANCO' | null;
+  confianca: NivelConfianca | null;
+  tipoErro: TipoErro | null;
+  gabarito: 'CERTO' | 'ERRADO';
+  acertou: boolean;
+  tipoResultado: TipoResultado | null;
+  caderno: Caderno | null;
+}
+
+export interface TentativaDetalhe {
+  id: number;
+  simuladoId: number;
+  simuladoNumero: number;
+  simuladoTitulo: string;
+  dataInicio: string;
+  dataFim?: string;
+  finalizada: boolean;
+  totalQuestoes: number;
+  acertos?: number;
+  erros?: number;
+  emBranco?: number;
+  pontuacao?: number;
+  percentualAcerto?: number;
+  respostas: RespostaDetalhe[];
+  totalVermelho: number;
+  totalAmarelo: number;
+  totalVerde: number;
+}
+
+// ============================================
+// API: CADERNOS E PROGRESSO
+// ============================================
+export interface CadernoResumo {
+  totalVermelho: number;
+  totalAmarelo: number;
+  totalVerde: number;
+  totalQuestoes: number;
+}
+
+export interface CadernoDetalhe {
+  caderno: Caderno;
+  titulo: string;
+  descricao: string;
+  totalQuestoes: number;
+  questoes: RespostaDetalhe[];
+}
+
+export interface MeuProgresso {
+  simuladosEmAndamento: number;
+  simuladosFinalizados: number;
+  mediaAproveitamento: number;
+  cadernos: CadernoResumo;
+}
+
+// ============================================
+// API: REQUESTS
+// ============================================
+export interface RespostaRequest {
+  simuladoQuestaoId: number;
+  resposta: 'CERTO' | 'ERRADO' | 'BRANCO' | null;
+  confianca: NivelConfianca | null;
+  tipoErro?: TipoErro | null;
+}
+
+export interface SalvarRespostasRequest {
+  respostas: RespostaRequest[];
 }
