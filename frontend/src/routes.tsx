@@ -11,6 +11,8 @@ import SimuladoPlay from './pages/SimuladoPlay';
 import SimuladoResult from './pages/SimuladoResult';
 import SimuladoFeedback from './pages/SimuladoFeedback';
 import CadernoView from './pages/CadernoView';
+import RankingPage from './pages/RankingPage';
+
 
 
 export default function AppRoutes() {
@@ -71,7 +73,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/cadernos/:caderno"
         element={
@@ -85,7 +87,7 @@ export default function AppRoutes() {
         path="/ranking"
         element={
           <ProtectedRoute>
-            <ComingSoon title="Ranking" />
+            <RankingPage />
           </ProtectedRoute>
         }
       />

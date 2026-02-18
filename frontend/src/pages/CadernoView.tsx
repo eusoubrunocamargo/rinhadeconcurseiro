@@ -114,7 +114,7 @@ export default function CadernoView() {
     return (
         <Layout>
             {/* Header */}
-            <div className={`bg-gradient-to-r ${config.bgColor} rounded-xl p-6 mb-6`}>
+            <div className={`bg-linear-to-r ${config.bgColor} rounded-xl p-6 mb-6`}>
                 <div className="flex items-center gap-4">
                     <span className="text-4xl">{config.emoji}</span>
                     <div>

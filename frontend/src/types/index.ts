@@ -187,3 +187,30 @@ export interface RespostaRequest {
 export interface SalvarRespostasRequest {
   respostas: RespostaRequest[];
 }
+
+// ============================================
+// RANKING
+// ============================================
+export interface RankingItem {
+  posicao: number;
+  usuarioId: number;
+  nome: string;
+  apelido?: string;
+  fotoUrl?: string;
+  pontuacao: number;
+  acertos: number;
+  erros: number;
+  emBranco: number;
+  percentualAcerto: number;
+  simuladosFinalizados: number;
+  isCurrentUser: boolean;
+}
+
+export interface Ranking {
+  tipo: 'SIMULADO' | 'GERAL';
+  simuladoId?: number;
+  simuladoTitulo?: string;
+  totalParticipantes: number;
+  ranking: RankingItem[];
+  currentUserPosition?: RankingItem;
+}
