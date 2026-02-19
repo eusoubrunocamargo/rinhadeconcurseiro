@@ -1,0 +1,2433 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "MDvx8",
+      "x": 0,
+      "y": 0,
+      "name": "Home Alternative",
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "#f0fcff",
+      "layout": "vertical",
+      "padding": 80,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "HXSwd",
+          "name": "homeCard",
+          "width": 760,
+          "fill": "#ddf5ff",
+          "cornerRadius": 24,
+          "layout": "vertical",
+          "gap": 18,
+          "padding": 36,
+          "children": [
+            {
+              "type": "text",
+              "id": "jeREL",
+              "name": "homeTitle",
+              "fill": "#17323f",
+              "content": "RINHA DE CONCURSEIRO",
+              "fontFamily": "Hanuman",
+              "fontSize": 54,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "QY5ph",
+              "name": "homeTag",
+              "fill": "#2a4c5d",
+              "content": "Treino duro, guerra fácil",
+              "fontFamily": "Noto Sans Syloti Nagri",
+              "fontSize": 24,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "EsL7k",
+              "name": "homeDesc",
+              "fill": "#737373",
+              "content": "Entre para iniciar seus simuladores e comparar seu desempenho com seus concorrentes",
+              "fontFamily": "Noto Sans Syloti Nagri",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "nCgqk",
+              "name": "homeB1",
+              "fill": "#2e5b72",
+              "content": "* Questões no padrão da banca",
+              "fontFamily": "Noto Sans Syloti Nagri",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "2De7I",
+              "name": "homeB2",
+              "fill": "#2e5b72",
+              "content": "* Correção automática e autofeedback",
+              "fontFamily": "Noto Sans Syloti Nagri",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "as1qR",
+              "name": "homeB3",
+              "fill": "#2e5b72",
+              "content": "* Revisão direcionada",
+              "fontFamily": "Noto Sans Syloti Nagri",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "epXTO",
+              "name": "googleBtn",
+              "fill": "#427c99",
+              "cornerRadius": 12,
+              "gap": 10,
+              "padding": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "18Ih5",
+                  "name": "googleBtnTxt",
+                  "fill": "#f0fcff",
+                  "content": "Entrar com Google",
+                  "fontFamily": "Noto Sans Syloti Nagri",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "lyzX1",
+      "x": 1540,
+      "y": 0,
+      "name": "Dashboard Alternative",
+      "clip": true,
+      "width": 1440,
+      "height": 1200,
+      "fill": "#EEF3FF",
+      "gap": 24,
+      "padding": 32,
+      "children": [
+        {
+          "type": "frame",
+          "id": "uUMyv",
+          "name": "sidebarA",
+          "width": 260,
+          "height": "fill_container",
+          "fill": "#1E3A8A",
+          "cornerRadius": 24,
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 22,
+          "children": [
+            {
+              "type": "text",
+              "id": "9erXb",
+              "name": "brandA",
+              "fill": "#FFFFFF",
+              "content": "🏆 Rinha de Concurseiro",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "Vwivb",
+              "name": "welcomeA",
+              "fill": "#BFDBFE",
+              "content": "Painel de Estudos",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "BJPsY",
+              "name": "nav1A",
+              "width": "fill_container",
+              "fill": "#1D4ED8",
+              "cornerRadius": 12,
+              "gap": 10,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "VZo29",
+                  "name": "nav1Txt",
+                  "fill": "#FFFFFF",
+                  "content": "📊 Dashboard",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EFsso",
+              "name": "nav2A",
+              "width": "fill_container",
+              "fill": "#1E3A8A",
+              "cornerRadius": 12,
+              "gap": 10,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KCSyj",
+                  "name": "nav2Txt",
+                  "fill": "#DBEAFE",
+                  "content": "📝 Simulados",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0W4k7",
+              "name": "nav3A",
+              "width": "fill_container",
+              "fill": "#1E3A8A",
+              "cornerRadius": 12,
+              "gap": 10,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "RS3MX",
+                  "name": "nav3Txt",
+                  "fill": "#DBEAFE",
+                  "content": "🏅 Ranking",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Dfe4U",
+              "name": "nav4A",
+              "width": "fill_container",
+              "fill": "#1E3A8A",
+              "cornerRadius": 12,
+              "gap": 10,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "4tjw8",
+                  "name": "nav4Txt",
+                  "fill": "#DBEAFE",
+                  "content": "📚 Cadernos",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "LVyO2",
+          "name": "mainA",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "7kNsU",
+              "name": "greetingA",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 20,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "imFaq",
+                  "name": "greetTitle",
+                  "fill": "#0F172A",
+                  "content": "Olá, Pedro!",
+                  "fontFamily": "Inter",
+                  "fontSize": 36,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "BKf3f",
+                  "name": "greetSub",
+                  "fill": "#475569",
+                  "content": "Pronto para mais uma sessão de estudos focada na Câmara?",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "StWv1",
+              "name": "ongoingA",
+              "width": "fill_container",
+              "fill": "#DBEAFE",
+              "cornerRadius": 18,
+              "padding": 20,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "6z6OT",
+                  "name": "ongoingL",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "8raRm",
+                      "name": "ongoingTitle",
+                      "fill": "#1E3A8A",
+                      "content": "⏳ Continuar Simulado: Direito Constitucional",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oU2Uz",
+                      "name": "ongoingMeta",
+                      "fill": "#334155",
+                      "content": "32 de 50 respondidas",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fFFBC",
+                  "name": "ongoingBtn",
+                  "fill": "#1D4ED8",
+                  "cornerRadius": 10,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "I9D7d",
+                      "name": "ongoingBtnText",
+                      "fill": "#FFFFFF",
+                      "content": "Continuar →",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "DLlef",
+              "name": "statsRowA",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XQt6Q",
+                  "name": "statA1",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0CtPn",
+                      "name": "statA1v",
+                      "fill": "#2563EB",
+                      "content": "28",
+                      "fontFamily": "Inter",
+                      "fontSize": 30,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "GfTzo",
+                      "name": "statA1l",
+                      "fill": "#64748B",
+                      "content": "Simulados Finalizados",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XxoIF",
+                  "name": "statA2",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ys1QG",
+                      "name": "statA2v",
+                      "fill": "#F97316",
+                      "content": "4",
+                      "fontFamily": "Inter",
+                      "fontSize": 30,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mJRCV",
+                      "name": "statA2l",
+                      "fill": "#64748B",
+                      "content": "Em Andamento",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kyKPL",
+                  "name": "statA3",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yz88e",
+                      "name": "statA3v",
+                      "fill": "#16A34A",
+                      "content": "78.4%",
+                      "fontFamily": "Inter",
+                      "fontSize": 30,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PvTBu",
+                      "name": "statA3l",
+                      "fill": "#64748B",
+                      "content": "Aproveitamento",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "8vOAU",
+                  "name": "statA4",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "f9dMc",
+                      "name": "statA4v",
+                      "fill": "#7C3AED",
+                      "content": "1.254",
+                      "fontFamily": "Inter",
+                      "fontSize": 30,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "1aU7U",
+                      "name": "statA4l",
+                      "fill": "#64748B",
+                      "content": "Questões Realizadas",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aLTp5",
+              "name": "lowerA",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "meIGa",
+                  "name": "leftA",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LFnWW",
+                      "name": "revCard",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fzhek",
+                          "name": "revTitle",
+                          "fill": "#0F172A",
+                          "content": "Cadernos de Revisão",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "7E7e9",
+                          "name": "revRow1",
+                          "fill": "#B91C1C",
+                          "content": "🔴 Crítico  •  18 questões",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "s88CJ",
+                          "name": "revRow2",
+                          "fill": "#B45309",
+                          "content": "🟡 Reforço  •  42 questões",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tu7kO",
+                          "name": "revRow3",
+                          "fill": "#15803D",
+                          "content": "🟢 Domínio  •  93 questões",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QPQVr",
+                      "name": "activityCard",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "n03ru",
+                          "name": "activityTitle",
+                          "fill": "#0F172A",
+                          "content": "Atividade Recente",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nHJDJ",
+                          "name": "itemA1",
+                          "width": "fill_container",
+                          "fill": "#F8FAFC",
+                          "cornerRadius": 10,
+                          "padding": 12,
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "4RUAY",
+                              "name": "itemA1l",
+                              "fill": "#1F2937",
+                              "content": "Informática Legislativa",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "osfxp",
+                              "name": "itemA1r",
+                              "fill": "#16A34A",
+                              "content": "82%",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Bie0Y",
+                          "name": "itemA2",
+                          "width": "fill_container",
+                          "fill": "#F8FAFC",
+                          "cornerRadius": 10,
+                          "padding": 12,
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "6P7gN",
+                              "name": "itemA2l",
+                              "fill": "#1F2937",
+                              "content": "Regimento Interno",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "DwSlV",
+                              "name": "itemA2r",
+                              "fill": "#CA8A04",
+                              "content": "64%",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "58Yjp",
+                  "name": "rightA",
+                  "width": 340,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "fEzIS",
+                      "name": "actionsCard",
+                      "width": "fill_container",
+                      "fill": "#1E3A8A",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "jzz4w",
+                          "name": "actionsTitle",
+                          "fill": "#FFFFFF",
+                          "content": "Ações Rápidas",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cTpeg",
+                          "name": "action1",
+                          "fill": "#DBEAFE",
+                          "content": "📝 Novo Simulado",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mKqXb",
+                          "name": "action2",
+                          "fill": "#DBEAFE",
+                          "content": "🏅 Ver Ranking",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "u8air",
+                          "name": "action3",
+                          "fill": "#DBEAFE",
+                          "content": "📊 Abrir Estatísticas",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ncoHY",
+                      "name": "focusCard",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rb0O1",
+                          "name": "focusTitle",
+                          "fill": "#0F172A",
+                          "content": "Meta da Semana",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "udzTY",
+                          "name": "focusBody",
+                          "fill": "#475569",
+                          "content": "Resolver 200 questões com média acima de 75%.",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aF7oJ",
+                          "name": "focusProg",
+                          "fill": "#2563EB",
+                          "content": "Progresso atual: 68%",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "EV3of",
+      "x": 3100,
+      "y": 0,
+      "name": "Home Alternative Mono",
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "#F5F5F5",
+      "layout": "vertical",
+      "padding": 80,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "3Q1bm",
+          "name": "monoCard",
+          "width": 620,
+          "fill": "#FFFFFF",
+          "cornerRadius": 20,
+          "layout": "vertical",
+          "gap": 20,
+          "padding": 40,
+          "children": [
+            {
+              "type": "text",
+              "id": "V4F2T",
+              "name": "monoBrand",
+              "fill": "#6B6B6B",
+              "content": "Alto nível em pós-edital",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ySwak",
+              "name": "monoTitle",
+              "fill": "#111111",
+              "content": "RINHADECONCURSEIRO",
+              "fontFamily": "Inter",
+              "fontSize": 42,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "B4QPO",
+              "name": "monoDesc",
+              "fill": "#4A4A4A",
+              "content": "Treino duro, guerra fácil",
+              "fontFamily": "Inter",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "BAYyL",
+              "name": "monoDivider1",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#EEEEEE"
+            },
+            {
+              "type": "frame",
+              "id": "rjYez",
+              "name": "featWrap",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MIOry",
+                  "name": "feat1",
+                  "fill": "#222222",
+                  "content": "• Questões no padrão da banca",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "QYI7s",
+                  "name": "feat2",
+                  "fill": "#222222",
+                  "content": "• Correção automática e autofeedback",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "hexDo",
+                  "name": "feat3",
+                  "fill": "#222222",
+                  "content": "• Revisão direcionada",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EkHOF",
+              "name": "monoDivider2",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#EEEEEE"
+            },
+            {
+              "type": "frame",
+              "id": "AMhxT",
+              "name": "cta",
+              "width": "fill_container",
+              "fill": "#111111",
+              "cornerRadius": 12,
+              "gap": 10,
+              "padding": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "uwLUR",
+                  "name": "ctaTxt",
+                  "fill": "#FFFFFF",
+                  "content": "Entrar com Google",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "gHWjp",
+              "name": "foot",
+              "fill": "#8A8A8A",
+              "content": "Preparação focada para o concurso 2025",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "dpZoc",
+      "x": 4660,
+      "y": 0,
+      "name": "Dashboard Alternative Mono",
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "#1F1F1F",
+      "layout": "vertical",
+      "padding": 64,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "P9zJz",
+          "name": "dashShell",
+          "width": 1180,
+          "height": "fill_container",
+          "fill": "#2A2A2A",
+          "cornerRadius": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "vnHFz",
+              "name": "side",
+              "width": 260,
+              "height": "fill_container",
+              "fill": "#232323",
+              "cornerRadius": 14,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "W3nuL",
+                  "name": "brand",
+                  "fill": "#F3F3F3",
+                  "content": "RINHADECONCURSEIRO",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "O7YFB",
+                  "name": "sub",
+                  "fill": "#B5B5B5",
+                  "content": "Preparação de alto nível",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "o1zxR",
+                  "name": "mdiv",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "#3A3A3A"
+                },
+                {
+                  "type": "frame",
+                  "id": "QNs9L",
+                  "name": "nav1",
+                  "width": "fill_container",
+                  "fill": "#F3F3F3",
+                  "cornerRadius": 10,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SJmXv",
+                      "name": "nav1t",
+                      "fill": "#111111",
+                      "content": "Dashboard",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "4p4lJ",
+                  "name": "nav2",
+                  "width": "fill_container",
+                  "fill": "#2E2E2E",
+                  "cornerRadius": 10,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zeYSa",
+                      "name": "nav2t",
+                      "fill": "#E6E6E6",
+                      "content": "Simulados",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DyCKf",
+                  "name": "nav3",
+                  "width": "fill_container",
+                  "fill": "#2E2E2E",
+                  "cornerRadius": 10,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sMfQn",
+                      "name": "nav3t",
+                      "fill": "#E6E6E6",
+                      "content": "Ranking",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vBIFV",
+                  "name": "nav4",
+                  "width": "fill_container",
+                  "fill": "#2E2E2E",
+                  "cornerRadius": 10,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "PsJKp",
+                      "name": "nav4t",
+                      "fill": "#E6E6E6",
+                      "content": "Cadernos",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HYt8i",
+                  "name": "sp",
+                  "width": "fill_container",
+                  "height": "fill_container"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gqzKu",
+              "name": "main",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 18,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "8jP0x",
+                  "name": "head",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "7TJjL",
+                      "name": "headTitle",
+                      "fill": "#F5F5F5",
+                      "content": "Olá, Pedro!",
+                      "fontFamily": "Inter",
+                      "fontSize": 36,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ppUUf",
+                      "name": "headSub",
+                      "fill": "#BDBDBD",
+                      "content": "Pronto para mais uma sessão de estudos?",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kuF2B",
+                  "name": "cont",
+                  "width": "fill_container",
+                  "fill": "#303030",
+                  "cornerRadius": 12,
+                  "padding": 14,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xwOnK",
+                      "name": "contL",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "bbaog",
+                          "name": "contT",
+                          "fill": "#F1F1F1",
+                          "content": "Continuar simulado: Direito Constitucional",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "FEhAX",
+                          "name": "contM",
+                          "fill": "#BDBDBD",
+                          "content": "32 de 50 respondidas",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BpCv3",
+                      "name": "contBtn",
+                      "fill": "#F3F3F3",
+                      "cornerRadius": 10,
+                      "padding": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ELm4X",
+                          "name": "contBtnT",
+                          "fill": "#111111",
+                          "content": "Continuar",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "06F9f",
+                  "name": "stats",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "j0HT0",
+                      "name": "s1",
+                      "width": "fill_container",
+                      "fill": "#303030",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "4dlTc",
+                          "name": "s1v",
+                          "fill": "#F5F5F5",
+                          "content": "28",
+                          "fontFamily": "Inter",
+                          "fontSize": 28,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cnTMt",
+                          "name": "s1l",
+                          "fill": "#BDBDBD",
+                          "content": "Simulados Finalizados",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "5W5Ud",
+                      "name": "s2",
+                      "width": "fill_container",
+                      "fill": "#303030",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DKHz1",
+                          "name": "s2v",
+                          "fill": "#F5F5F5",
+                          "content": "4",
+                          "fontFamily": "Inter",
+                          "fontSize": 28,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "PCoXV",
+                          "name": "s2l",
+                          "fill": "#BDBDBD",
+                          "content": "Em Andamento",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hvPFf",
+                      "name": "s3",
+                      "width": "fill_container",
+                      "fill": "#303030",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iwfmF",
+                          "name": "s3v",
+                          "fill": "#F5F5F5",
+                          "content": "78.4%",
+                          "fontFamily": "Inter",
+                          "fontSize": 28,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "9zr1d",
+                          "name": "s3l",
+                          "fill": "#BDBDBD",
+                          "content": "Aproveitamento",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Y2aq7",
+                      "name": "s4",
+                      "width": "fill_container",
+                      "fill": "#303030",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3AeDb",
+                          "name": "s4v",
+                          "fill": "#F5F5F5",
+                          "content": "1.254",
+                          "fontFamily": "Inter",
+                          "fontSize": 28,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uttBs",
+                          "name": "s4l",
+                          "fill": "#BDBDBD",
+                          "content": "Questões Realizadas",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oUX2M",
+                  "name": "div",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "#454545"
+                },
+                {
+                  "type": "frame",
+                  "id": "RmRFX",
+                  "name": "lower",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Ukcis",
+                      "name": "left",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "NGWJb",
+                          "name": "rev",
+                          "width": "fill_container",
+                          "fill": "#303030",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zRmaU",
+                              "name": "revT",
+                              "fill": "#F3F3F3",
+                              "content": "Cadernos de Revisão",
+                              "fontFamily": "Inter",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "fE58y",
+                              "name": "rev1",
+                              "fill": "#D0D0D0",
+                              "content": "Crítico  •  18 questões",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "URQSR",
+                              "name": "rev2",
+                              "fill": "#D0D0D0",
+                              "content": "Reforço  •  42 questões",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "vP7zx",
+                              "name": "rev3",
+                              "fill": "#D0D0D0",
+                              "content": "Domínio  •  93 questões",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "9I5Ad",
+                          "name": "recent",
+                          "width": "fill_container",
+                          "fill": "#303030",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "H4Ct0",
+                              "name": "recentT",
+                              "fill": "#F3F3F3",
+                              "content": "Atividade Recente",
+                              "fontFamily": "Inter",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "boMox",
+                              "name": "r1",
+                              "width": "fill_container",
+                              "fill": "#2A2A2A",
+                              "cornerRadius": 10,
+                              "padding": 10,
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IEpOT",
+                                  "name": "r1l",
+                                  "fill": "#DCDCDC",
+                                  "content": "Informática Legislativa",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "guI04",
+                                  "name": "r1r",
+                                  "fill": "#F3F3F3",
+                                  "content": "82%",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "4N5qY",
+                              "name": "r2",
+                              "width": "fill_container",
+                              "fill": "#2A2A2A",
+                              "cornerRadius": 10,
+                              "padding": 10,
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "rmjCS",
+                                  "name": "r2l",
+                                  "fill": "#DCDCDC",
+                                  "content": "Regimento Interno",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mGWtX",
+                                  "name": "r2r",
+                                  "fill": "#F3F3F3",
+                                  "content": "64%",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "8Jd3C",
+                      "name": "right",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "FNdqH",
+                          "name": "quick",
+                          "width": "fill_container",
+                          "fill": "#303030",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Ja7Wa",
+                              "name": "quickT",
+                              "fill": "#F3F3F3",
+                              "content": "Ações Rápidas",
+                              "fontFamily": "Inter",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "0k5LL",
+                              "name": "q1",
+                              "fill": "#D0D0D0",
+                              "content": "Novo Simulado",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "p1roP",
+                              "name": "q2",
+                              "fill": "#D0D0D0",
+                              "content": "Ver Ranking",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "9B3uk",
+                              "name": "q3",
+                              "fill": "#D0D0D0",
+                              "content": "Abrir Estatísticas",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fluyC",
+                          "name": "empty",
+                          "width": "fill_container",
+                          "fill": "#303030",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PV3F5",
+                              "name": "emptyT",
+                              "fill": "#D0D0D0",
+                              "content": "Nenhum simulado realizado ainda.",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "4SUEV",
+                              "name": "emptyBtn",
+                              "fill": "#F3F3F3",
+                              "cornerRadius": 10,
+                              "padding": 10,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LHyM5",
+                                  "name": "emptyBtnT",
+                                  "fill": "#111111",
+                                  "content": "Começar agora",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "jr99V",
+      "x": 6220,
+      "y": 0,
+      "name": "Home Alternative Lunaris",
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "#0A0F1C",
+      "layout": "vertical",
+      "padding": 72,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "ZaW4x",
+          "name": "lunCard",
+          "width": 760,
+          "fill": "#1E293B",
+          "cornerRadius": 12,
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 32,
+          "children": [
+            {
+              "type": "text",
+              "id": "N70Tg",
+              "name": "lunLabel",
+              "fill": "#64748B",
+              "content": "RINHADECONCURSEIRO",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Z92EH",
+              "name": "lunTitle",
+              "fill": "#FFFFFF",
+              "content": "Treino preciso para vencer no CEBRASPE",
+              "fontFamily": "Inter",
+              "fontSize": 44,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "FIK72",
+              "name": "lunSub",
+              "fill": "#94A3B8",
+              "content": "Questões no padrão da banca, correção imediata e progresso comparável em ranking.",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "n5YjO",
+              "name": "lunDivider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#0F172A"
+            },
+            {
+              "type": "frame",
+              "id": "zaJid",
+              "name": "lunFeat",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WqNRq",
+                  "name": "f1",
+                  "fill": "#22D3EE",
+                  "content": "✓ questões no padrão cebraspe",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "cVaww",
+                  "name": "f2",
+                  "fill": "#22D3EE",
+                  "content": "◐ correção automática e autofeedback",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "nutJ2",
+                  "name": "f3",
+                  "fill": "#475569",
+                  "content": "○ revisão direcionada por desempenho",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "nkETZ",
+              "name": "cta",
+              "width": "fill_container",
+              "fill": "#22D3EE",
+              "cornerRadius": 8,
+              "padding": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "8Qsij",
+                  "name": "ctaTxt",
+                  "fill": "#0A0F1C",
+                  "content": "entrar com google",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "WKNe6",
+              "name": "lunFoot",
+              "fill": "#475569",
+              "content": "preparação focada para o concurso 2025",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "4GfkJ",
+      "x": 7780,
+      "y": 0,
+      "name": "Dashboard Alternative Lunaris",
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "#0A0F1C",
+      "layout": "vertical",
+      "padding": 56,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "tNJOt",
+          "name": "shell",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#1E293B",
+          "cornerRadius": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "1EvKP",
+              "name": "side",
+              "width": 270,
+              "height": "fill_container",
+              "fill": "#0F172A",
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 18,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "7xuIC",
+                  "name": "brand",
+                  "fill": "#FFFFFF",
+                  "content": "RINHADECONCURSEIRO",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "4kHcL",
+                  "name": "sub",
+                  "fill": "#64748B",
+                  "content": "preparação de alto nível",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "RIQWz",
+                  "name": "div1",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "#1E293B"
+                },
+                {
+                  "type": "frame",
+                  "id": "I94f5",
+                  "name": "nav1",
+                  "width": "fill_container",
+                  "fill": "#22D3EE",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tB4RI",
+                      "name": "nav1t",
+                      "fill": "#0A0F1C",
+                      "content": "dashboard",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "PhbXN",
+                  "name": "nav2",
+                  "width": "fill_container",
+                  "fill": "#1E293B",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "s0h8I",
+                      "name": "nav2t",
+                      "fill": "#94A3B8",
+                      "content": "simulados",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SxXFW",
+                  "name": "nav3",
+                  "width": "fill_container",
+                  "fill": "#1E293B",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "YuY8s",
+                      "name": "nav3t",
+                      "fill": "#94A3B8",
+                      "content": "ranking",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KPsve",
+                  "name": "nav4",
+                  "width": "fill_container",
+                  "fill": "#1E293B",
+                  "cornerRadius": 8,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "5W34M",
+                      "name": "nav4t",
+                      "fill": "#94A3B8",
+                      "content": "cadernos",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RkpnH",
+                  "name": "space",
+                  "width": "fill_container",
+                  "height": "fill_container"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "NxagP",
+              "name": "main",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Kwcvo",
+                  "name": "head",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OFrws",
+                      "name": "headLabel",
+                      "fill": "#64748B",
+                      "content": "DASHBOARD",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "j8971",
+                      "name": "headTitle",
+                      "fill": "#FFFFFF",
+                      "content": "Olá, Pedro!",
+                      "fontFamily": "Inter",
+                      "fontSize": 30,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FxBxa",
+                      "name": "headSub",
+                      "fill": "#94A3B8",
+                      "content": "pronto para mais uma sessão de estudos?",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "0J6SH",
+                  "name": "cont",
+                  "width": "fill_container",
+                  "fill": "#0F172A",
+                  "cornerRadius": 12,
+                  "gap": 10,
+                  "padding": 14,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "HM9HC",
+                      "name": "contL",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LkRt0",
+                          "name": "contT",
+                          "fill": "#FFFFFF",
+                          "content": "continuar simulado: direito constitucional",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aDxzY",
+                          "name": "contM",
+                          "fill": "#64748B",
+                          "content": "32/50 respondidas",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c86ci",
+                      "name": "contBtn",
+                      "fill": "#22D3EE",
+                      "cornerRadius": 8,
+                      "padding": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ey8xS",
+                          "name": "contBtnT",
+                          "fill": "#0A0F1C",
+                          "content": "continuar",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "6iHZd",
+                  "name": "stats",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "X3BpK",
+                      "name": "s1",
+                      "width": "fill_container",
+                      "fill": "#0F172A",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fo77a",
+                          "name": "s1l",
+                          "fill": "#64748B",
+                          "content": "FINALIZADOS",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "1py3Q",
+                          "name": "s1v",
+                          "fill": "#FFFFFF",
+                          "content": "28",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Iklat",
+                      "name": "s2",
+                      "width": "fill_container",
+                      "fill": "#0F172A",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BQWjW",
+                          "name": "s2l",
+                          "fill": "#64748B",
+                          "content": "EM ANDAMENTO",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "minfw",
+                          "name": "s2v",
+                          "fill": "#FFFFFF",
+                          "content": "4",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tHs8K",
+                      "name": "s3",
+                      "width": "fill_container",
+                      "fill": "#0F172A",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iBTV7",
+                          "name": "s3l",
+                          "fill": "#64748B",
+                          "content": "APROVEITAMENTO",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "txVtO",
+                          "name": "s3v",
+                          "fill": "#22D3EE",
+                          "content": "78.4%",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rynjA",
+                      "name": "s4",
+                      "width": "fill_container",
+                      "fill": "#0F172A",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "by3V0",
+                          "name": "s4l",
+                          "fill": "#64748B",
+                          "content": "QUESTÕES",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "20VTC",
+                          "name": "s4v",
+                          "fill": "#FFFFFF",
+                          "content": "1.254",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mwkD1",
+                  "name": "content",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "20G0j",
+                      "name": "left",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "xdoZc",
+                          "name": "rev",
+                          "width": "fill_container",
+                          "fill": "#0F172A",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "vG3Ce",
+                              "name": "revT",
+                              "fill": "#64748B",
+                              "content": "CADERNOS [3/3]",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "bpWtw",
+                              "name": "rev1",
+                              "fill": "#22D3EE",
+                              "content": "✓ crítico — 18 questões",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "aAaRF",
+                              "name": "rev2",
+                              "fill": "#22D3EE",
+                              "content": "◐ reforço — 42 questões",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Pg7e4",
+                              "name": "rev3",
+                              "fill": "#64748B",
+                              "content": "○ domínio — 93 questões",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j36Ad",
+                          "name": "recent",
+                          "width": "fill_container",
+                          "fill": "#0F172A",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "q8mbQ",
+                              "name": "recentT",
+                              "fill": "#64748B",
+                              "content": "ATIVIDADE RECENTE",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "QhzBo",
+                              "name": "r1",
+                              "width": "fill_container",
+                              "fill": "#1E293B",
+                              "cornerRadius": 8,
+                              "padding": 10,
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "A4YiY",
+                                  "name": "r1l",
+                                  "fill": "#FFFFFF",
+                                  "content": "informática legislativa",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mW3Wr",
+                                  "name": "r1r",
+                                  "fill": "#22D3EE",
+                                  "content": "82%",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Qju4X",
+                              "name": "r2",
+                              "width": "fill_container",
+                              "fill": "#1E293B",
+                              "cornerRadius": 8,
+                              "padding": 10,
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "OxDp7",
+                                  "name": "r2l",
+                                  "fill": "#FFFFFF",
+                                  "content": "regimento interno",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "2m1xf",
+                                  "name": "r2r",
+                                  "fill": "#22D3EE",
+                                  "content": "64%",
+                                  "fontFamily": "JetBrains Mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FjvKu",
+                      "name": "right",
+                      "width": 300,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gWHSN",
+                          "name": "quick",
+                          "width": "fill_container",
+                          "fill": "#0F172A",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kHN6J",
+                              "name": "quickT",
+                              "fill": "#64748B",
+                              "content": "AÇÕES RÁPIDAS",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "uVkYi",
+                              "name": "q1",
+                              "fill": "#94A3B8",
+                              "content": "novo simulado",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "11e7Q",
+                              "name": "q2",
+                              "fill": "#94A3B8",
+                              "content": "ver ranking",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "S6Pzo",
+                              "name": "q3",
+                              "fill": "#94A3B8",
+                              "content": "abrir estatísticas",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mUeGn",
+                          "name": "goal",
+                          "width": "fill_container",
+                          "fill": "#0F172A",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XbfVQ",
+                              "name": "goalT",
+                              "fill": "#64748B",
+                              "content": "PROGRESSO",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kIUDj",
+                              "name": "barBg",
+                              "width": "fill_container",
+                              "height": 8,
+                              "fill": "#1E293B",
+                              "cornerRadius": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Jnpr9",
+                                  "name": "bar",
+                                  "width": 180,
+                                  "height": "fill_container",
+                                  "fill": "#22D3EE",
+                                  "cornerRadius": 4
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "chtp3",
+                              "name": "goalTx",
+                              "fill": "#64748B",
+                              "content": "70% do onboarding concluído",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
