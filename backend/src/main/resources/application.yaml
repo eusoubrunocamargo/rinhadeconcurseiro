@@ -17,7 +17,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  
+
+  #Flyway
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 3
+    locations: classpath:db/migration
+    validate-on-migrate: false
+
   # OAuth2 (configuraremos depois)
   security:
     oauth2:
@@ -35,6 +43,8 @@ logging:
     org.springframework.security.oauth2: TRACE
     org.springframework.web.client: DEBUG
     br.com.rinhadeconcurseiro: DEBUG
+    org.flywaydb: DEBUG
+    org.springframework.boot.autoconfigure.flyway: DEBUG
 
 # Servidor
 server:
