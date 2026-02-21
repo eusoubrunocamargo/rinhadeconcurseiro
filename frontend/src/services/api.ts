@@ -12,8 +12,11 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Verifica se a requisição tem uma flag para pular o redirecionamento
+    const skipRedirect = (error.config as any)?.skipRedirect;
+
     // Se receber 401 (não autenticado), redireciona para login
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !skipRedirect) {
       // Evita redirect loop se já estiver na página de login
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';

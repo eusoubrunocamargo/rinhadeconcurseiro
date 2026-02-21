@@ -7,7 +7,9 @@ import type { User } from '../types';
  */
 export async function getCurrentUser(): Promise<User | null> {
   try {
-    const response = await api.get<User>('api/v1/usuarios/me');
+    const response = await api.get<User>('api/v1/usuarios/me', {
+      skipRedirect: true,
+    } as any);
     return response.data;
   } catch (error) {
     // 401 = não autenticado, retorna null
