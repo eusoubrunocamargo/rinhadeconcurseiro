@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
-
 @Service
 @RequiredArgsConstructor
 public class TentativaSimuladoService {

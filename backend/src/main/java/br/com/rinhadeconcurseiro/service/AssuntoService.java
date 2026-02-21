@@ -36,6 +36,7 @@ public class AssuntoService {
     @Transactional(readOnly = true)
     public AssuntoResponse buscarPorId(Long id) {
 
+
         Assunto assunto = assuntoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Assunto não encontrado"));
 

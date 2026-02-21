@@ -1,6 +1,5 @@
 package br.com.rinhadeconcurseiro.dto.response;
 
-import br.com.rinhadeconcurseiro.entity.SimuladoQuestao;
 import lombok.Builder;
 
 import java.time.LocalDate;

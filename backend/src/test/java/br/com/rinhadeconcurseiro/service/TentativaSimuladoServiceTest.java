@@ -93,6 +93,7 @@ class TentativaSimuladoServiceTest {
     @DisplayName("Iniciar Tentativa")
     class IniciarTentativa {
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Deve iniciar tentativa com sucesso")
         void deveIniciarTentativaComSucesso() {
@@ -181,6 +182,7 @@ class TentativaSimuladoServiceTest {
     @DisplayName("Salvar Respostas")
     class SalvarRespostas {
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Deve salvar respostas com sucesso")
         void deveSalvarRespostasComSucesso() {
@@ -214,6 +216,7 @@ class TentativaSimuladoServiceTest {
             verify(tentativaRepository).save(tentativa);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Deve lançar exceção se tentativa já finalizada")
         void deveLancarExcecaoSeTentativaJaFinalizada() {
@@ -289,6 +292,7 @@ class TentativaSimuladoServiceTest {
             return tentativa;
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Acerto com certeza = Verde")
         void acertoComCertezaDeveSerVerde() {
@@ -312,6 +316,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(Caderno.VERDE);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Acerto com dúvida = Amarelo")
         void acertoComDuvidaDeveSerAmarelo() {
@@ -334,6 +339,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(Caderno.AMARELO);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Acerto por chute = Amarelo")
         void acertoPorChuteDeveSerAmarelo() {
@@ -354,6 +360,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(TipoResultado.ACERTO_POR_CHUTE);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Erro de conteúdo = Vermelho")
         void erroConteudoDeveSerVermelho() {
@@ -377,6 +384,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(Caderno.VERMELHO);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Erro de interpretação com dúvida = Amarelo")
         void erroInterpretacaoComDuvidaDeveSerAmarelo() {
@@ -397,6 +405,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(Caderno.AMARELO);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Erro de interpretação com certeza = Vermelho")
         void erroInterpretacaoComCertezaDeveSerVermelho() {
@@ -417,6 +426,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(Caderno.VERMELHO);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Erro por distração = Amarelo")
         void erroDistracaoDeveSerAmarelo() {
@@ -439,6 +449,7 @@ class TentativaSimuladoServiceTest {
                     .isEqualTo(Caderno.AMARELO);
         }
 
+        @SuppressWarnings("null")
         @Test
         @DisplayName("Resposta em branco não classifica")
         void respostaEmBrancoNaoClassifica() {
