@@ -2,9 +2,9 @@
 spring:
   datasource:
     datasource:
-  url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
-  username: ${PGUSER}
-  password: ${PGPASSWORD}
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
     hikari:
       maximum-pool-size: 5
 
