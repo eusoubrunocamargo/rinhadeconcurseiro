@@ -1,9 +1,10 @@
 # src/main/resources/application-prod.yml
 spring:
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
+    datasource:
+  url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+  username: ${PGUSER}
+  password: ${PGPASSWORD}
     hikari:
       maximum-pool-size: 5
 
