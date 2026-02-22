@@ -2,6 +2,7 @@ package br.com.rinhadeconcurseiro.config;
 
 import br.com.rinhadeconcurseiro.entity.Usuario;
 import br.com.rinhadeconcurseiro.repository.UsuarioRepository;
+import br.com.rinhadeconcurseiro.service.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final UsuarioRepository usuarioRepository;
+    private final JwtService jwtService;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -34,16 +36,24 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     ) throws IOException, ServletException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        assert oAuth2User != null;
         String googleId = oAuth2User.getAttribute("sub");
+        String email = oAuth2User.getAttribute("email");
 
-        Optional<Usuario> usuario = usuarioRepository.findByGoogleId(googleId);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByGoogleId(googleId);
 
-        usuario.ifPresent(value -> log.info("Login bem-sucedido: {} (ID: {}",
-                value.getEmail(),
-                value.getId()));
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            log.info("Login bem-sucedido: {} (ID: {})", usuario.getEmail(), usuario.getId());
 
-        setDefaultTargetUrl(frontendUrl + "/dashboard");
-        super.onAuthenticationSuccess(request, response, authentication);
+            // Gera o token JWT
+            String token = jwtService.generateToken(googleId, email, usuario.getId());
+
+            // Redireciona para o frontend com o token na URL
+            String redirectUrl = frontendUrl + "/oauth/callback?token=" + token;
+            getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        } else {
+            log.error("Usuário não encontrado para googleId: {}", googleId);
+            getRedirectStrategy().sendRedirect(request, response, frontendUrl + "/login?error=user_not_found");
+        }
     }
 }
