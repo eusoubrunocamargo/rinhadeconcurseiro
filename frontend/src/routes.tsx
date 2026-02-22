@@ -12,6 +12,7 @@ import SimuladoResult from './pages/SimuladoResult';
 import SimuladoFeedback from './pages/SimuladoFeedback';
 import CadernoView from './pages/CadernoView';
 import RankingPage from './pages/RankingPage';
+import OAuthCallback from './pages/OAuthCallback';
 
 
 
@@ -19,6 +20,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
 
       <Route
         path="/dashboard"
