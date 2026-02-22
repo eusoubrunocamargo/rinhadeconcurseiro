@@ -1,8 +1,13 @@
 import { useAuth } from '../../hooks/useAuth';
+import { logout } from '../../services/auth';
 import { Link } from 'react-router-dom';
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-10">
@@ -55,7 +60,7 @@ export default function Header() {
             </Link>
 
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
               title="Sair"
             >

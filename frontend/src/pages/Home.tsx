@@ -1,8 +1,9 @@
+import { getOAuthLoginUrl } from '../services/auth';
+
 export default function Home() {
   const handleGoogleLogin = () => {
     // Redireciona para o endpoint OAuth do backend
-    const apiUrl = import.meta.env.VITE_API_URL;
-    window.location.href = `${apiUrl}/oauth2/authorization/google`;
+    window.location.href = getOAuthLoginUrl();
   };
 
   return (
