@@ -34,7 +34,7 @@ extends JpaRepository<RespostaQuestao, Long> {
             AND r2.caderno IS NOT NULL
       )
     ORDER BY sq.questao.materia.nome, sq.ordem
-""")
+    """)
     List<RespostaQuestao> findByUsuarioIdAndCaderno(
             @Param("usuarioId") Long usuarioId,
             @Param("caderno") Caderno caderno);
@@ -57,7 +57,7 @@ extends JpaRepository<RespostaQuestao, Long> {
             AND r2.caderno IS NOT NULL
       )
     GROUP BY r.caderno
-""")
+    """)
     List<Object[]> countByUsuarioIdGroupByCaderno(@Param("usuarioId") Long usuarioId);
 
     //buscar respostas mais recentes de cada questão (para consolidar cadernos)
@@ -84,5 +84,36 @@ extends JpaRepository<RespostaQuestao, Long> {
 
     //deletar respostas de uma tentativa (para refazer)
     void deleteByTentativaId(Long tentativaId);
+
+    // ── Nova: agregação por assunto dentro de um caderno ─────────
+    //
+    // Retorna Object[] com:
+    //   [0] Long   assuntoId
+    //   [1] String assuntoNome
+    //   [2] Long   total       (COUNT)
+    //   [3] Long   acertos     (SUM CASE)
+    //
+    // Questões sem assunto cadastrado são excluídas (q.assunto IS NOT NULL).
+    // Ordenação por volume decrescente para que o service pegue os top N.
+    @Query(value = """
+    SELECT
+        a.id                                          AS assuntoId,
+        a.nome                                        AS assuntoNome,
+        COUNT(rq.id)                                  AS total,
+        SUM(CASE WHEN rq.tipo_resultado LIKE 'ACERTO%' THEN 1 ELSE 0 END) AS acertos
+    FROM resposta_questao rq
+    JOIN tentativa_simulado t   ON t.id = rq.id_tentativa
+    JOIN simulado_questao   sq  ON sq.id = rq.id_simulado_questao
+    JOIN questao            q   ON q.id  = sq.id_questao
+    JOIN assunto            a   ON a.id  = q.id_assunto
+    WHERE t.id_usuario = :usuarioId
+      AND rq.caderno   = :caderno
+      AND t.finalizada = true
+    GROUP BY a.id, a.nome
+    ORDER BY COUNT(rq.id) DESC
+    """, nativeQuery = true)
+    List<Object[]> aggregatePorAssunto(
+            @Param("usuarioId") Long usuarioId,
+            @Param("caderno") String caderno);
 
 }

@@ -96,4 +96,17 @@ public class TentativaSimuladoController {
 
         return ResponseEntity.ok(tentativaService.obterCaderno(usuario.getId(), caderno));
     }
+
+    // Sprint 2: resumo completo de assuntos de um caderno (sem limite de 5)
+    // Endpoint: GET /api/v1/usuarios/me/cadernos/{caderno}/resumo
+
+    @GetMapping("/usuarios/me/cadernos/{caderno}/resumo")
+    public ResponseEntity<@NonNull List<ResumoAssuntoResponse>> resumoCaderno(
+            @PathVariable Caderno caderno,
+            @AuthenticationPrincipal Usuario usuario) {
+
+        return ResponseEntity.ok(
+                tentativaService.resumoAssuntosPorCaderno(usuario.getId(), caderno, Integer.MAX_VALUE)
+        );
+    }
 }

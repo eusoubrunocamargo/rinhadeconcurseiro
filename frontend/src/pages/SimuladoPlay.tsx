@@ -5,6 +5,7 @@ import { getSimuladoById } from '../services/simulado';
 import { iniciarSimulado, salvarRespostas, getTentativaById } from '../services/tentativa';
 import Layout from '../components/layout/Layout';
 import QuestaoCard from '../components/ui/QuestaoCard';
+import SimuladoLayout from '../components/layout/SimuladoLayout';
 
 interface RespostaLocal {
   resposta: boolean | null;
@@ -61,10 +62,10 @@ export default function SimuladoPlay() {
   async function carregarRespostasExistentes(tentId: number, simuladoData: SimuladoDetalhado) {
     try {
       const tentativa = await getTentativaById(tentId);
-      
+
       // Mapear respostas do backend para o estado local
       const mapaRespostas = new Map<number, RespostaLocal>();
-      
+
       tentativa.respostas.forEach((r) => {
         // Encontrar o questaoId a partir do simuladoQuestaoId
         const sq = simuladoData.questoes.find((q) => q.id === r.simuladoQuestaoId);
@@ -137,7 +138,7 @@ export default function SimuladoPlay() {
 
   function montarPayload(): RespostaRequest[] {
     if (!simulado) return [];
-    
+
     return simulado.questoes.map((sq) => {
       const r = respostas.get(sq.questaoId);
       return {
@@ -221,25 +222,239 @@ export default function SimuladoPlay() {
   const respostaAtual = respostas.get(questaoAtualData.questaoId);
   const podeConfirmar = respostaAtual?.resposta !== null && respostaAtual?.confianca !== null;
 
-  return (
-    <Layout>
-      {/* Header do Simulado */}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-800">{simulado.titulo}</h1>
-        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-          <span>
-            {respondidas} de {totalQuestoes} confirmadas
+  /*SLOTS para o novo design UIUX*/
+  const slotHeader = (
+    <div className="px-6 h-16 flex items-center justify-between gap-8">
+
+      <div className="flex items-center gap-6">
+        <div>
+          <h1 className="text-xs font-extrabold uppercase tracking-tighter text-dark-text">
+            {simulado.titulo}
+          </h1>
+          <p className="text-[10px] text-subtle-text font-medium">
+            {simulado.questoes.length} questões
+          </p>
+        </div>
+
+        <div className="hidden md:flex items-center gap-2">
+          <span className="text-sm font-black text-dark-text">
+            {respondidas}
+            <span className="text-subtle-text font-normal"> / {totalQuestoes}</span>
           </span>
-          <div className="flex-1 h-2 bg-gray-200 rounded-full max-w-xs">
+          <div className="w-24 h-1.5 bg-border-hub rounded-full">
             <div
-              className="h-2 bg-blue-600 rounded-full transition-all"
+              className="h-1.5 bg-accent rounded-full transition-all"
               style={{ width: `${(respondidas / totalQuestoes) * 100}%` }}
-            ></div>
+            />
           </div>
         </div>
       </div>
 
-      {/* Questão Atual */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={handlePausar}
+          disabled={salvando}
+          className="p-2 text-subtle-text hover:text-dark-text transition-colors"
+          title="Pausar e sair"
+        >
+          ⏸
+        </button>
+      </div>
+
+    </div>
+  );
+
+  const slotMinimapa = (
+    <div className="w-full overflow-x-auto">
+      <div className="flex items-center justify-start min-w-full px-4 py-3 gap-1.5">
+        {simulado.questoes.map((sq, index) => {
+          const item = respostas.get(sq.questaoId);
+          const isAtual = index === questaoAtual;
+
+          const bg =
+            isAtual ? '#ffffff'
+              : item?.confirmada && item.resposta === true ? '#a3ffac'
+                : item?.confirmada && item.resposta === false ? '#ff8097'
+                  : item?.resposta !== null ? '#FEF9C3'
+                    : '#ffffff';
+
+          const border =
+            isAtual ? '2px solid #1A1A1A'
+              : item?.confirmada && item.resposta === true ? '1px solid #a3ffac'
+                : item?.confirmada && item.resposta === false ? '1px solid #ff8097'
+                  : item?.resposta !== null ? '1px solid #EAB308'
+                    : '1px solid #E5E5E5';
+
+          return (
+            <button
+              key={sq.id}
+              onClick={() => setQuestaoAtual(index)}
+              title={`Questão ${index + 1}`}
+              style={{ backgroundColor: bg, border, transform: isAtual ? 'scale(1.25)' : undefined }}
+              className="shrink-0 w-3 h-3 rounded-full transition-all duration-200 cursor-pointer"
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const slotNavRodape = (
+    <div className="px-8 h-20 flex items-center justify-between">
+
+      <button
+        onClick={() => setQuestaoAtual((prev) => prev - 1)}
+        disabled={questaoAtual === 0}
+        className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border-hub hover:bg-background-hub transition-all font-bold text-dark-text disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      >
+        ← Anterior
+      </button>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handlePausar}
+          disabled={salvando}
+          className="px-5 py-3 rounded-xl border border-border-hub bg-white font-bold text-sm text-dark-text hover:bg-background-hub transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {salvando ? 'Salvando...' : 'Pausar'}
+        </button>
+        <button
+          onClick={handleFinalizar}
+          disabled={salvando}
+          className="px-8 py-3 rounded-xl bg-accent text-white font-bold text-sm hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {salvando ? 'Salvando...' : 'Finalizar'}
+        </button>
+      </div>
+
+      <button
+        onClick={() => setQuestaoAtual((prev) => prev + 1)}
+        disabled={questaoAtual === totalQuestoes - 1}
+        className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border-hub hover:bg-background-hub transition-all font-bold text-dark-text disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      >
+        Próxima →
+      </button>
+
+    </div>
+  );
+
+  return (
+    // <Layout>
+    //   {/* Header do Simulado */}
+    //   <div className="mb-6">
+    //     <h1 className="text-xl font-bold text-gray-800">{simulado.titulo}</h1>
+    //     <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+    //       <span>
+    //         {respondidas} de {totalQuestoes} confirmadas
+    //       </span>
+    //       <div className="flex-1 h-2 bg-gray-200 rounded-full max-w-xs">
+    //         <div
+    //           className="h-2 bg-blue-600 rounded-full transition-all"
+    //           style={{ width: `${(respondidas / totalQuestoes) * 100}%` }}
+    //         ></div>
+    //       </div>
+    //     </div>
+    //   </div>
+
+    //   {/* Questão Atual */}
+    //   <QuestaoCard
+    //     numero={questaoAtualData.ordem}
+    //     comando={questaoAtualData.comando}
+    //     materia={questaoAtualData.materiaNome}
+    //     assunto={questaoAtualData.assuntoNome}
+    //     resposta={respostaAtual?.resposta ?? null}
+    //     confianca={respostaAtual?.confianca ?? null}
+    //     confirmada={respostaAtual?.confirmada ?? false}
+    //     onResponder={(valor) => handleResponder(questaoAtualData.questaoId, valor)}
+    //     onConfianca={(valor) => handleConfianca(questaoAtualData.questaoId, valor)}
+    //     onConfirmar={() => handleConfirmar(questaoAtualData.questaoId)}
+    //     podeConfirmar={podeConfirmar && !respostaAtual?.confirmada}
+    //   />
+
+    //   {/* Navegação */}
+    //   <div className="flex items-center justify-between mt-6">
+    //     <button
+    //       onClick={() => setQuestaoAtual((prev) => prev - 1)}
+    //       disabled={questaoAtual === 0}
+    //       className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+    //     >
+    //       ← Anterior
+    //     </button>
+
+    //     <div className="flex gap-1.5 overflow-x-auto max-w-md py-1 px-1">
+    //       {simulado.questoes.map((sq, index) => {
+    //         const item = respostas.get(sq.questaoId);
+    //         const isAtual = index === questaoAtual;
+
+    //         let corClasse = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+    //         if (isAtual) {
+    //           corClasse = 'bg-blue-600 text-white';
+    //         } else if (item?.confirmada) {
+    //           // Confirmada: verde ou vermelho baseado na resposta
+    //           corClasse = item.resposta === true
+    //             ? 'bg-green-500 text-white'
+    //             : 'bg-red-500 text-white';
+    //         } else if (item?.resposta !== null) {
+    //           // Marcada mas não confirmada
+    //           corClasse = 'bg-yellow-200 text-yellow-800';
+    //         }
+
+    //         return (
+    //           <button
+    //             key={sq.id}
+    //             onClick={() => setQuestaoAtual(index)}
+    //             className={`min-w-8 h-8 px-2 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${corClasse}`}
+    //           >
+    //             {index + 1}
+    //           </button>
+    //         );
+    //       })}
+    //     </div>
+
+    //     <button
+    //       onClick={() => setQuestaoAtual((prev) => prev + 1)}
+    //       disabled={questaoAtual === totalQuestoes - 1}
+    //       className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+    //     >
+    //       Próxima →
+    //     </button>
+    //   </div>
+
+    //   {/* Botões de Ação */}
+    //   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+    //     <button
+    //       onClick={handlePausar}
+    //       disabled={salvando}
+    //       className={`px-6 py-3 rounded-lg font-medium transition-colors border ${salvando
+    //         ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+    //         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 cursor-pointer'
+    //         }`}
+    //     >
+    //       {salvando ? 'Salvando...' : '⏸️ Pausar e Sair'}
+    //     </button>
+    //     <button
+    //       onClick={handleFinalizar}
+    //       disabled={salvando}
+    //       className={`px-8 py-3 rounded-lg font-medium transition-colors ${salvando
+    //         ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+    //         : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+    //         }`}
+    //     >
+    //       {salvando ? 'Salvando...' : '✅ Finalizar Simulado'}
+    //     </button>
+    //   </div>
+    //   {respondidas < totalQuestoes && (
+    //     <p className="text-sm text-gray-500 mt-3 text-center">
+    //       Você ainda tem {totalQuestoes - respondidas} questões não confirmadas.
+    //     </p>
+    //   )}
+    // </Layout>
+
+    <SimuladoLayout
+      header={slotHeader}
+      minimapa={slotMinimapa}
+      navRodape={slotNavRodape}
+    >
       <QuestaoCard
         numero={questaoAtualData.ordem}
         comando={questaoAtualData.comando}
@@ -254,85 +469,11 @@ export default function SimuladoPlay() {
         podeConfirmar={podeConfirmar && !respostaAtual?.confirmada}
       />
 
-      {/* Navegação */}
-      <div className="flex items-center justify-between mt-6">
-        <button
-          onClick={() => setQuestaoAtual((prev) => prev - 1)}
-          disabled={questaoAtual === 0}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-        >
-          ← Anterior
-        </button>
-
-        <div className="flex gap-1.5 overflow-x-auto max-w-md py-1 px-1">
-          {simulado.questoes.map((sq, index) => {
-            const item = respostas.get(sq.questaoId);
-            const isAtual = index === questaoAtual;
-
-            let corClasse = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
-            if (isAtual) {
-              corClasse = 'bg-blue-600 text-white';
-            } else if (item?.confirmada) {
-              // Confirmada: verde ou vermelho baseado na resposta
-              corClasse = item.resposta === true 
-                ? 'bg-green-500 text-white' 
-                : 'bg-red-500 text-white';
-            } else if (item?.resposta !== null) {
-              // Marcada mas não confirmada
-              corClasse = 'bg-yellow-200 text-yellow-800';
-            }
-
-            return (
-              <button
-                key={sq.id}
-                onClick={() => setQuestaoAtual(index)}
-                className={`min-w-8 h-8 px-2 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${corClasse}`}
-              >
-                {index + 1}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={() => setQuestaoAtual((prev) => prev + 1)}
-          disabled={questaoAtual === totalQuestoes - 1}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Próxima →
-        </button>
-      </div>
-
-      {/* Botões de Ação */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <button
-          onClick={handlePausar}
-          disabled={salvando}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors border ${
-            salvando
-              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 cursor-pointer'
-          }`}
-        >
-          {salvando ? 'Salvando...' : '⏸️ Pausar e Sair'}
-        </button>
-        <button
-          onClick={handleFinalizar}
-          disabled={salvando}
-          className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-            salvando
-              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
-          }`}
-        >
-          {salvando ? 'Salvando...' : '✅ Finalizar Simulado'}
-        </button>
-      </div>
       {respondidas < totalQuestoes && (
-        <p className="text-sm text-gray-500 mt-3 text-center">
-          Você ainda tem {totalQuestoes - respondidas} questões não confirmadas.
+        <p className="text-xs text-subtle-text mt-4 text-center">
+          {totalQuestoes - respondidas} questões não confirmadas
         </p>
       )}
-    </Layout>
+    </SimuladoLayout>
   );
 }

@@ -8,6 +8,7 @@ import type {
   CadernoResumo,
   CadernoDetalhe,
   Caderno,
+  ResumoAssunto,
 } from '../types';
 
 // ============================================
@@ -70,5 +71,13 @@ export async function getCadernosResumo(): Promise<CadernoResumo> {
 
 export async function getCadernoDetalhe(caderno: Caderno): Promise<CadernoDetalhe> {
   const response = await api.get<CadernoDetalhe>(`/api/v1/usuarios/me/cadernos/${caderno}`);
+  return response.data;
+}
+
+// Sprint 2: resumo completo de assuntos de um caderno (sem limite)
+export async function getResumoCaderno(caderno: Caderno): Promise<ResumoAssunto[]> {
+  const response = await api.get<ResumoAssunto[]>(
+    `/api/v1/usuarios/me/cadernos/${caderno}/resumo`
+  );
   return response.data;
 }

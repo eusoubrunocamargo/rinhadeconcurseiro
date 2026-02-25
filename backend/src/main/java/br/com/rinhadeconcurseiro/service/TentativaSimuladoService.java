@@ -58,7 +58,7 @@ public class TentativaSimuladoService {
         // IMPORTANTE: Não excluir tentativas finalizadas!
         // Elas alimentam os cadernos e o histórico.
 
-        // Criar nova tentativa
+        // Criar tentativa
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
@@ -204,19 +204,55 @@ public class TentativaSimuladoService {
         int emAndamento = tentativaRepository
                 .findByUsuarioIdAndFinalizadaFalseOrderByDataInicioDesc(usuarioId).size();
 
-        // Contar simulados DISTINTOS finalizados
-        long finalizados = tentativaRepository.countSimuladosDistintosFinalizados(usuarioId);
+        long finalizados = tentativaRepository.countByUsuarioIdAndFinalizadaTrue(usuarioId);
 
         Double media = tentativaRepository.calcularMediaAproveitamento(usuarioId);
 
         CadernoResumoResponse cadernos = obterResumoCadernos(usuarioId);
 
+        // top 5 assuntos por caderno — mesmo método reutilizado pela Sprint 2
+        Map<String, List<ResumoAssuntoResponse>> topAssuntos = Map.of(
+                "VERMELHO", resumoAssuntosPorCaderno(usuarioId, Caderno.VERMELHO, 5),
+                "AMARELO",  resumoAssuntosPorCaderno(usuarioId, Caderno.AMARELO,  5),
+                "VERDE",    resumoAssuntosPorCaderno(usuarioId, Caderno.VERDE,    5)
+        );
+
         return new MeuProgressoResponse(
                 emAndamento,
                 (int) finalizados,
                 media != null ? media : 0.0,
-                cadernos
+                cadernos,
+                topAssuntos
         );
+    }
+
+    // Método central de agregação — usado tanto pelo dashboard (limit=5)
+    // quanto pelo endpoint /resumo do CadernoView (limit=Integer.MAX_VALUE):
+
+    @Transactional(readOnly = true)
+    public List<ResumoAssuntoResponse> resumoAssuntosPorCaderno(
+            Long usuarioId, Caderno caderno, int limit) {
+
+        return respostaRepository
+                .aggregatePorAssunto(usuarioId, caderno.name())
+                .stream()
+                .limit(limit)
+                .map(row -> {
+                    long total   = ((Number) row[2]).longValue();
+                    long acertos = ((Number) row[3]).longValue();
+                    long erros   = total - acertos;
+                    double pct   = total > 0 ? (acertos * 100.0) / total : 0.0;
+
+                    return new ResumoAssuntoResponse(
+                            ((Number) row[0]).longValue(),  // assuntoId
+                            (String)  row[1],               // assuntoNome
+                            (int) total,
+                            (int) acertos,
+                            (int) erros,
+                            Math.round(pct * 100.0) / 100.0 // arredonda para 2 casas
+                    );
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
