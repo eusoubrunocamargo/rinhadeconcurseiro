@@ -109,4 +109,20 @@ public class TentativaSimuladoController {
                 tentativaService.resumoAssuntosPorCaderno(usuario.getId(), caderno, Integer.MAX_VALUE)
         );
     }
+
+    @GetMapping("/usuarios/me/estatisticas/assuntos")
+    public ResponseEntity<@NonNull List<EstatisticaAssuntoResponse>> estatisticasAssuntos(
+            @AuthenticationPrincipal Usuario usuario) {
+
+        return ResponseEntity.ok(
+                tentativaService.estatisticasGlobaisPorAssunto(usuario.getId())
+        );
+    }
+
+    @GetMapping("/simulados/{simuladoId}/stats")
+    public ResponseEntity<@NonNull SimuladoStatsResponse> obterStats(
+            @PathVariable Long simuladoId) {
+
+        return ResponseEntity.ok(tentativaService.obterStatsPorSimulado(simuladoId));
+    }
 }

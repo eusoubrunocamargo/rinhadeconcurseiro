@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Layout from '../components/layout/Layout';
-import type { MeuProgresso, TentativaResumo } from '../types';
-import { getMeuProgresso, getSimuladosEmAndamento, getSimuladosFinalizados } from '../services/tentativa';
+import type { MeuProgresso, TentativaResumo, EstatisticaAssunto } from '../types';
+import { getMeuProgresso, getSimuladosEmAndamento, getSimuladosFinalizados, getEstatisticasAssuntos } from '../services/tentativa';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [progresso, setProgresso] = useState<MeuProgresso | null>(null);
   const [emAndamento, setEmAndamento] = useState<TentativaResumo[]>([]);
   const [finalizados, setFinalizados] = useState<TentativaResumo[]>([]);
+  const [estatisticas, setEstatisticas] = useState<EstatisticaAssunto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,14 +22,16 @@ export default function Dashboard() {
     try {
       setLoading(true);
       setError(null);
-      const [progressoData, emAndamentoData, finalizadosData] = await Promise.all([
+      const [progressoData, emAndamentoData, finalizadosData, estatisticasData] = await Promise.all([
         getMeuProgresso(),
         getSimuladosEmAndamento(),
         getSimuladosFinalizados(),
+        getEstatisticasAssuntos(),
       ]);
       setProgresso(progressoData);
       setEmAndamento(emAndamentoData);
       setFinalizados(finalizadosData.slice(0, 5));
+      setEstatisticas(estatisticasData);
     } catch {
       setError('Erro ao carregar dados. Tente recarregar a página.');
     } finally {
@@ -49,10 +52,10 @@ export default function Dashboard() {
   const metaColor = metaPct >= 100 ? '#059669' : '#FF4D4D';
 
   const rank =
-    aproveitamento >= 85 ? { label: 'Elite',         cor: '#FF4D4D' } :
-    aproveitamento >= 70 ? { label: 'Avançado',      cor: '#059669' } :
-    aproveitamento >= 50 ? { label: 'Intermediário', cor: '#D97706' } :
-                           { label: 'Iniciante',     cor: '#666666' };
+    aproveitamento >= 85 ? { label: 'Elite', cor: '#FF4D4D' } :
+      aproveitamento >= 70 ? { label: 'Avançado', cor: '#059669' } :
+        aproveitamento >= 50 ? { label: 'Intermediário', cor: '#D97706' } :
+          { label: 'Iniciante', cor: '#666666' };
 
   return (
     <Layout>
@@ -167,10 +170,10 @@ export default function Dashboard() {
             </div>
           ) : progresso ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <MetricCard value={progresso.simuladosFinalizados}   label="Finalizados"    icon="check_circle" destaque />
-              <MetricCard value={progresso.simuladosEmAndamento}   label="Em andamento"   icon="pending"      />
-              <MetricCard value={`${aproveitamento.toFixed(1)}%`}  label="Aproveitamento" icon="trending_up"  />
-              <MetricCard value={totalQuestoes}                    label="Questões"       icon="bolt"         />
+              <MetricCard value={progresso.simuladosFinalizados} label="Finalizados" icon="check_circle" destaque />
+              <MetricCard value={progresso.simuladosEmAndamento} label="Em andamento" icon="pending" />
+              <MetricCard value={`${aproveitamento.toFixed(1)}%`} label="Aproveitamento" icon="trending_up" />
+              <MetricCard value={totalQuestoes} label="Questões" icon="bolt" />
             </div>
           ) : null}
 
@@ -214,6 +217,11 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Cards de Estatísticas por Assunto */}
+          {!loading && estatisticas.length > 0 && (
+            <AssuntosDestaque estatisticas={estatisticas} />
+          )}
+
           {/* Continuar de onde parou */}
           {!loading && emAndamento.length > 0 && (
             <div className="bg-white rounded-[28px] shadow-minimal overflow-hidden" style={{ border: '1px solid #E5E5E5' }}>
@@ -243,7 +251,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-dark-text truncate">{t.simuladoTitulo}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <div className="flex-1 h-2 rounded-full overflow-hidden max-w-40" style={{ backgroundColor: '#EEEEEE' }}>
+                          <div className="flex-1 h-2 rounded-full overflow-hidden max-w-[160px]" style={{ backgroundColor: '#EEEEEE' }}>
                             <div
                               className="h-full rounded-full transition-all"
                               style={{ width: `${Math.max(pct, 1)}%`, backgroundColor: '#FF4D4D' }}
@@ -279,8 +287,8 @@ export default function Dashboard() {
                   const pct = t.percentualAcerto ?? 0;
                   const [fgColor, bgColor] =
                     pct >= 70 ? ['#059669', '#ecfdf5'] :
-                    pct >= 50 ? ['#D97706', '#fffbeb'] :
-                                ['#DC2626', '#fef2f2'];
+                      pct >= 50 ? ['#D97706', '#fffbeb'] :
+                        ['#DC2626', '#fef2f2'];
                   return (
                     <Link
                       key={t.id}
@@ -421,5 +429,136 @@ function CadernoCard({
         >→</span>
       </div>
     </Link>
+  );
+}
+
+// ── AssuntosDestaque ─────────────────────────────────────────────────────────
+
+function AssuntosDestaque({ estatisticas }: { estatisticas: EstatisticaAssunto[] }) {
+  // Top 5 domínio: tier DOMINIO, mín. 10 questões, maior percentual primeiro
+  const topDominio = estatisticas
+    .filter(e => e.tier === 'DOMINIO' && e.total >= 10)
+    .slice(0, 5);
+
+  // Top 5 críticos: menor percentual primeiro (já vem ordenado DESC do backend, então inverter)
+  const topCritico = [...estatisticas]
+    .sort((a, b) => a.percentual - b.percentual)
+    .slice(0, 5);
+
+  if (topDominio.length === 0 && topCritico.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {/* Card: Você domina */}
+      {topDominio.length > 0 && (
+        <div
+          className="bg-white rounded-[28px] overflow-hidden"
+          style={{ border: '1px solid #E5E5E5' }}
+        >
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#059669' }}>
+                  emoji_events
+                </span>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-dark-text">
+                  Você domina
+                </h2>
+              </div>
+              <p className="text-[10px]" style={{ color: '#999' }}>Top 5 · mín. 10 questões</p>
+            </div>
+            <Link
+              to="/estatisticas"
+              className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70"
+              style={{ color: '#059669' }}
+            >
+              ver tudo →
+            </Link>
+          </div>
+          <div className="px-5 pb-5 flex flex-col gap-2.5">
+            {topDominio.map((e, i) => (
+              <AssuntoRow key={e.assuntoId} item={e} rank={i + 1} cor="#059669" bgCor="#ecfdf5" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Card: Cuidado */}
+      {topCritico.length > 0 && (
+        <div
+          className="bg-white rounded-[28px] overflow-hidden"
+          style={{ border: '1px solid #E5E5E5' }}
+        >
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#FF4D4D' }}>
+                  warning
+                </span>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-dark-text">
+                  Cuidado com esses
+                </h2>
+              </div>
+              <p className="text-[10px]" style={{ color: '#999' }}>Top 5 · menor aproveitamento</p>
+            </div>
+            <Link
+              to="/estatisticas"
+              className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70"
+              style={{ color: '#FF4D4D' }}
+            >
+              ver tudo →
+            </Link>
+          </div>
+          <div className="px-5 pb-5 flex flex-col gap-2.5">
+            {topCritico.map((e, i) => (
+              <AssuntoRow key={e.assuntoId} item={e} rank={i + 1} cor="#FF4D4D" bgCor="#fff0f0" />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AssuntoRow({
+  item,
+  rank,
+  cor,
+  bgCor,
+}: {
+  item: EstatisticaAssunto;
+  rank: number;
+  cor: string;
+  bgCor: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      {/* Rank badge */}
+      <span
+        className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0"
+        style={{ backgroundColor: bgCor, color: cor }}
+      >
+        {rank}
+      </span>
+
+      {/* Nome + barra */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <span className="text-[11px] font-bold text-dark-text truncate">{item.assuntoNome}</span>
+          <span className="text-[11px] font-black shrink-0" style={{ color: cor }}>
+            {item.percentual.toFixed(0)}%
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#F0F0F0' }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${Math.max(item.percentual, 1)}%`, backgroundColor: cor }}
+          />
+        </div>
+        <p className="text-[9px] mt-0.5" style={{ color: '#BBBBBB' }}>
+          {item.total} questões · {item.materiaNome}
+        </p>
+      </div>
+    </div>
   );
 }

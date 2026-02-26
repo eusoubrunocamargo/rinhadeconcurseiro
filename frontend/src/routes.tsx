@@ -13,6 +13,7 @@ import SimuladoFeedback from './pages/SimuladoFeedback';
 import CadernoView from './pages/CadernoView';
 import RankingPage from './pages/RankingPage';
 import OAuthCallback from './pages/OAuthCallback';
+import Estatisticas from './pages/Estatisticas';
 
 
 
@@ -98,7 +99,7 @@ export default function AppRoutes() {
         path="/estatisticas"
         element={
           <ProtectedRoute>
-            <ComingSoon title="Estatísticas" />
+            <Estatisticas />
           </ProtectedRoute>
         }
       />

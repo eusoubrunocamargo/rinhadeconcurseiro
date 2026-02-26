@@ -9,6 +9,7 @@ import type {
   CadernoDetalhe,
   Caderno,
   ResumoAssunto,
+  EstatisticaAssunto
 } from '../types';
 
 // ============================================
@@ -78,6 +79,17 @@ export async function getCadernoDetalhe(caderno: Caderno): Promise<CadernoDetalh
 export async function getResumoCaderno(caderno: Caderno): Promise<ResumoAssunto[]> {
   const response = await api.get<ResumoAssunto[]>(
     `/api/v1/usuarios/me/cadernos/${caderno}/resumo`
+  );
+  return response.data;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADICIONAR ao services/tentativa.ts
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getEstatisticasAssuntos(): Promise<EstatisticaAssunto[]> {
+  const response = await api.get<EstatisticaAssunto[]>(
+    '/api/v1/usuarios/me/estatisticas/assuntos'
   );
   return response.data;
 }

@@ -184,6 +184,21 @@ export interface MeuProgresso {
   topAssuntos: Record<string, ResumoAssunto[]>;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ADICIONAR ao types.ts
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EstatisticaAssunto {
+  assuntoId: number;
+  assuntoNome: string;
+  materiaNome: string;
+  total: number;
+  acertos: number;
+  erros: number;
+  percentual: number;
+  tier: 'DOMINIO' | 'ATENCAO' | 'CRITICO';
+}
+
 // ============================================
 // API: REQUESTS
 // ============================================

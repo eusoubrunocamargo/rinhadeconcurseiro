@@ -601,65 +601,195 @@ function ResumoCaderno({
   label:  string;
   resumo: ResumoAssunto[];
 }) {
-  // Caderno ainda sem dados suficientes para exibir o resumo
+  const [modalAberto, setModalAberto] = useState(false);
+
   if (resumo.length === 0) return null;
+
+  const totalQuestoes = resumo.reduce((acc, item) => acc + item.total, 0);
+
+  return (
+    <>
+      <div
+        className="bg-white rounded-[28px] overflow-hidden mb-2"
+        style={{ border: '1px solid #E5E5E5' }}
+      >
+        {/* Cabeçalho */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4">
+          <div>
+            <h3 className="text-sm font-black text-dark-text">
+              Assuntos no Caderno
+            </h3>
+            <p className="text-[11px] mt-0.5" style={{ color: '#999' }}>
+              {resumo.length} {resumo.length === 1 ? 'assunto' : 'assuntos'}
+              {' · '}
+              {totalQuestoes} {totalQuestoes === 1 ? 'questão' : 'questões'}
+            </p>
+          </div>
+
+          {/* Botão Mini-simulado */}
+          <button
+            onClick={() => setModalAberto(true)}
+            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3.5 py-2 rounded-full transition-all hover:opacity-80 active:scale-95"
+            style={{ backgroundColor: config.bgCor, color: config.cor, border: `1px solid ${config.borderCor}` }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>
+              quiz
+            </span>
+            Mini-simulado
+          </button>
+        </div>
+
+        {/* Lista de assuntos — apenas nome + contagem */}
+        <div className="px-6 pb-5 flex flex-col gap-0">
+          {resumo.map((item, idx) => (
+            <div
+              key={item.assuntoId}
+              className="flex items-center justify-between py-2.5"
+              style={{
+                borderTop: idx === 0 ? 'none' : '1px solid #F5F5F5',
+              }}
+            >
+              <span className="text-xs font-bold text-dark-text truncate flex-1 mr-3">
+                {item.assuntoNome}
+              </span>
+              <span
+                className="text-[10px] font-black px-2.5 py-1 rounded-full shrink-0"
+                style={{ backgroundColor: config.bgCor, color: config.cor }}
+              >
+                {item.total} {item.total === 1 ? 'questão' : 'questões'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modal de seleção de assunto */}
+      {modalAberto && (
+        <ModalMiniSimulado
+          config={config}
+          label={label}
+          assuntos={resumo}
+          onClose={() => setModalAberto(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// ── Modal Mini-simulado ───────────────────────────────────────────
+
+function ModalMiniSimulado({
+  config,
+  label,
+  assuntos,
+  onClose,
+}: {
+  config:   typeof CADERNO_CONFIG[keyof typeof CADERNO_CONFIG];
+  label:    string;
+  assuntos: ResumoAssunto[];
+  onClose:  () => void;
+}) {
+  const [assuntoSelecionado, setAssuntoSelecionado] = useState<ResumoAssunto | null>(null);
+
+  function handleIniciar() {
+    if (!assuntoSelecionado) return;
+    // TODO: chamar endpoint do mini-simulado quando o backend estiver pronto
+    // por ora fecha o modal
+    onClose();
+  }
 
   return (
     <div
-      className="bg-white rounded-[28px] overflow-hidden mb-2"
-      style={{ border: '1px solid #E5E5E5' }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Cabeçalho */}
-      <div className="px-6 pt-5 pb-4">
-        <h3 className="text-sm font-black text-dark-text">
-          Resumo do Caderno de {label}
-        </h3>
-        <p className="text-[11px] mt-0.5" style={{ color: '#999' }}>
-          {resumo.length} {resumo.length === 1 ? 'assunto' : 'assuntos'} com questões registradas
-        </p>
-      </div>
-
-      {/* Lista de assuntos */}
-      <div className="px-6 pb-5 flex flex-col gap-4">
-        {resumo.map(item => {
-          const pct = item.percentual; // já calculado no backend
-
-          const barColor =
-            pct >= 70 ? '#059669' :
-            pct >= 50 ? '#D97706' :
-                        config.cor;
-
-          return (
-            <div key={item.assuntoId} className="flex flex-col gap-1.5">
-              {/* Linha superior: assunto + percentual */}
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-bold text-dark-text truncate">
-                  {item.assuntoNome}
-                </span>
-                <span className="text-xs font-black shrink-0" style={{ color: barColor }}>
-                  {item.percentual.toFixed(1)}%
-                </span>
-              </div>
-
-              {/* Barra de progresso */}
-              <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#F0F0F0' }}>
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${Math.max(item.percentual, 1)}%`, backgroundColor: barColor }}
-                />
-              </div>
-
-              {/* Legenda inferior */}
-              <p className="text-[10px]" style={{ color: '#BBBBBB' }}>
-                {item.total} {item.total === 1 ? 'questão' : 'questões'} resolvidas
-                {' · '}
-                <span style={{ color: '#059669' }}>{item.acertos} acertos</span>
-                {' e '}
-                <span style={{ color: '#DC2626' }}>{item.erros} erros</span>
-              </p>
+      <div
+        className="bg-white w-full max-w-md rounded-[28px] overflow-hidden"
+        style={{ border: '1px solid #E5E5E5' }}
+      >
+        {/* Header do modal */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: '16px', color: config.cor }}
+              >
+                quiz
+              </span>
+              <h2 className="text-sm font-black text-dark-text">Mini-simulado</h2>
             </div>
-          );
-        })}
+            <p className="text-[11px]" style={{ color: '#999' }}>
+              Caderno {label} · 15 questões
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#999' }}>
+              close
+            </span>
+          </button>
+        </div>
+
+        {/* Lista de assuntos para selecionar */}
+        <div className="px-4 pb-2 max-h-64 overflow-y-auto flex flex-col gap-1.5">
+          {assuntos.map(a => {
+            const selecionado = assuntoSelecionado?.assuntoId === a.assuntoId;
+            return (
+              <button
+                key={a.assuntoId}
+                onClick={() => setAssuntoSelecionado(selecionado ? null : a)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-left transition-all"
+                style={
+                  selecionado
+                    ? { backgroundColor: config.bgCor, border: `1.5px solid ${config.cor}` }
+                    : { backgroundColor: '#FAFAFA', border: '1.5px solid #EEEEEE' }
+                }
+              >
+                <span
+                  className="text-xs font-bold truncate flex-1 mr-3"
+                  style={{ color: selecionado ? config.cor : '#1A1A1A' }}
+                >
+                  {a.assuntoNome}
+                </span>
+                <span
+                  className="text-[10px] font-black shrink-0"
+                  style={{ color: selecionado ? config.cor : '#999' }}
+                >
+                  {a.total} {a.total === 1 ? 'questão' : 'questões'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 pt-3 pb-5 flex flex-col gap-2">
+          <button
+            onClick={handleIniciar}
+            disabled={!assuntoSelecionado}
+            className="w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
+            style={
+              assuntoSelecionado
+                ? { backgroundColor: config.cor, color: '#fff' }
+                : { backgroundColor: '#F0F0F0', color: '#BBB', cursor: 'not-allowed' }
+            }
+          >
+            {assuntoSelecionado
+              ? `Iniciar · ${assuntoSelecionado.assuntoNome}`
+              : 'Selecione um assunto'}
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 text-xs font-bold text-center transition-opacity hover:opacity-60"
+            style={{ color: '#999' }}
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   );
