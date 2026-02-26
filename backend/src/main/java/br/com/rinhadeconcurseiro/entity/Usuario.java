@@ -37,6 +37,15 @@ public class Usuario {
     @Builder.Default
     private boolean ativo = true;
 
+    // 'USER' para usuários reais (OAuth), 'AGENT' para agentes de simulação
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String role = "USER";
+
+    // Apenas agentes usam este campo — usuários OAuth deixam NULL
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -47,5 +56,4 @@ public class Usuario {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-
 }
