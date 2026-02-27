@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+@theme {
+  /* Fontes */
+  --font-display: "Manrope", sans-serif;
+  --font-serif: "Merriweather", serif;
+
+  /* Paleta principal */
+  --color-accent: #FF4D4D;
+  --color-background-hub: #FAFAFA;
+  --color-dark-text: #1A1A1A;
+  --color-subtle-text: #666666;
+  --color-border-hub: #E5E5E5;
+
+  /* Status das questões */
+  --color-status-answered: #E0F2FE;
+  --color-status-answered-icon: #0EA5E9;
+  --color-status-review: #FEF9C3;
+  --color-status-review-icon: #EAB308;
+  --color-status-pending: #FFFFFF;
+  --color-status-pending-border: #E5E5E5;
+
+  /* Sombras */
+  --shadow-minimal: 0 2px 15px rgba(0, 0, 0, 0.04);
+  --shadow-hub-focus: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+}
+
+/* Classe utilitária para o texto de enunciado */
+.exam-text {
+  font-family: var(--font-serif);
+  line-height: 2;
+}

@@ -1,30 +1,31 @@
 import type { ReactNode } from 'react';
-import { createContext, useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import type { User } from '../types';
 import { getCurrentUser, logout as logoutService } from '../services/auth';
+import { AuthContext, type AuthContextType } from './auth-context';
 
 // Tipos do contexto
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  isAuthenticated: boolean;
-  login: () => void;
-  logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
-}
+// interface AuthContextType {
+//   user: User | null;
+//   loading: boolean;
+//   isAuthenticated: boolean;
+//   login: () => void;
+//   logout: () => Promise<void>;
+//   refreshUser: () => Promise<void>;
+// }
 
 // Valor padrão (nunca usado diretamente, mas necessário para tipagem)
-const defaultValue: AuthContextType = {
-  user: null,
-  loading: true,
-  isAuthenticated: false,
-  login: () => {},
-  logout: async () => {},
-  refreshUser: async () => {},
-};
+// const defaultValue: AuthContextType = {
+//   user: null,
+//   loading: true,
+//   isAuthenticated: false,
+//   login: () => {},
+//   logout: async () => {},
+//   refreshUser: async () => {},
+// };
 
 // Criar o contexto
-export const AuthContext = createContext<AuthContextType>(defaultValue);
+// export const AuthContext = createContext<AuthContextType>(defaultValue);
 
 // Props do Provider
 interface AuthProviderProps {
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);

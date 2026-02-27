@@ -58,7 +58,7 @@ public class TentativaSimuladoService {
         // IMPORTANTE: Não excluir tentativas finalizadas!
         // Elas alimentam os cadernos e o histórico.
 
-        // Criar nova tentativa
+        // Criar tentativa
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
@@ -137,7 +137,7 @@ public class TentativaSimuladoService {
     //===========
 
     @Transactional
-    public TentativaDetalheResponse finalizar (Long tentativaId, Long usuarioId) {
+    public TentativaDetalheResponse finalizar(Long tentativaId, Long usuarioId) {
         TentativaSimulado tentativa = getTentativaDoUsuario(tentativaId, usuarioId);
         if (tentativa.getFinalizada()) {
             throw new IllegalStateException("Tentativa já finalizada");
@@ -177,7 +177,7 @@ public class TentativaSimuladoService {
     // Consultas
     //===========
     @Transactional(readOnly = true)
-    public List<TentativaResumoResponse> listarEmAndamento(Long usuarioId){
+    public List<TentativaResumoResponse> listarEmAndamento(Long usuarioId) {
         return tentativaRepository.findByUsuarioIdAndFinalizadaFalseOrderByDataInicioDesc(usuarioId)
                 .stream()
                 .map(this::toResumoResponse)
@@ -194,7 +194,7 @@ public class TentativaSimuladoService {
     }
 
     @Transactional(readOnly = true)
-    public TentativaDetalheResponse buscarPorId(Long tentativaId, Long usuarioId){
+    public TentativaDetalheResponse buscarPorId(Long tentativaId, Long usuarioId) {
         TentativaSimulado tentativa = getTentativaDoUsuario(tentativaId, usuarioId);
         return toDetalheResponse(tentativa);
     }
@@ -204,19 +204,55 @@ public class TentativaSimuladoService {
         int emAndamento = tentativaRepository
                 .findByUsuarioIdAndFinalizadaFalseOrderByDataInicioDesc(usuarioId).size();
 
-        // Contar simulados DISTINTOS finalizados
-        long finalizados = tentativaRepository.countSimuladosDistintosFinalizados(usuarioId);
+        long finalizados = tentativaRepository.countByUsuarioIdAndFinalizadaTrue(usuarioId);
 
         Double media = tentativaRepository.calcularMediaAproveitamento(usuarioId);
 
         CadernoResumoResponse cadernos = obterResumoCadernos(usuarioId);
 
+        // top 5 assuntos por caderno — mesmo método reutilizado pela Sprint 2
+        Map<String, List<ResumoAssuntoResponse>> topAssuntos = Map.of(
+                "VERMELHO", resumoAssuntosPorCaderno(usuarioId, Caderno.VERMELHO, 5),
+                "AMARELO", resumoAssuntosPorCaderno(usuarioId, Caderno.AMARELO, 5),
+                "VERDE", resumoAssuntosPorCaderno(usuarioId, Caderno.VERDE, 5)
+        );
+
         return new MeuProgressoResponse(
                 emAndamento,
                 (int) finalizados,
                 media != null ? media : 0.0,
-                cadernos
+                cadernos,
+                topAssuntos
         );
+    }
+
+    // Método central de agregação — usado tanto pelo dashboard (limit=5)
+    // quanto pelo endpoint /resumo do CadernoView (limit=Integer.MAX_VALUE):
+
+    @Transactional(readOnly = true)
+    public List<ResumoAssuntoResponse> resumoAssuntosPorCaderno(
+            Long usuarioId, Caderno caderno, int limit) {
+
+        return respostaRepository
+                .aggregatePorAssunto(usuarioId, caderno.name())
+                .stream()
+                .limit(limit)
+                .map(row -> {
+                    long total = ((Number) row[2]).longValue();
+                    long acertos = ((Number) row[3]).longValue();
+                    long erros = total - acertos;
+                    double pct = total > 0 ? (acertos * 100.0) / total : 0.0;
+
+                    return new ResumoAssuntoResponse(
+                            ((Number) row[0]).longValue(),  // assuntoId
+                            (String) row[1],               // assuntoNome
+                            (int) total,
+                            (int) acertos,
+                            (int) erros,
+                            Math.round(pct * 100.0) / 100.0 // arredonda para 2 casas
+                    );
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -248,7 +284,7 @@ public class TentativaSimuladoService {
     }
 
     @Transactional(readOnly = true)
-    public CadernoDetalheResponse obterCaderno(Long usuarioId, Caderno caderno){
+    public CadernoDetalheResponse obterCaderno(Long usuarioId, Caderno caderno) {
         List<RespostaQuestao> respostas = respostaRepository.findByUsuarioIdAndCaderno(usuarioId, caderno);
 
         List<RespostaDetalheResponse> questoes = respostas
@@ -278,6 +314,51 @@ public class TentativaSimuladoService {
 
     }
 
+    // Converte Object[] → EstatisticaAssuntoResponse e calcula tier
+    @Transactional(readOnly = true)
+    public List<EstatisticaAssuntoResponse> estatisticasGlobaisPorAssunto(Long usuarioId) {
+
+        return respostaRepository
+                .estatisticaGlobalPorAssunto(usuarioId)
+                .stream()
+                .map(row -> {
+                    long total = ((Number) row[3]).longValue();
+                    long acertos = ((Number) row[4]).longValue();
+                    long erros = total - acertos;
+                    double pct = total > 0 ? (acertos * 100.0) / total : 0.0;
+                    double pctArredondado = Math.round(pct * 100.0) / 100.0;
+
+                    String tier = pctArredondado >= 70 ? "DOMINIO"
+                            : pctArredondado >= 50 ? "ATENCAO"
+                            : "CRITICO";
+
+                    return new EstatisticaAssuntoResponse(
+                            ((Number) row[0]).longValue(),  // assuntoId
+                            (String) row[1],               // assuntoNome
+                            (String) row[2],               // materiaNome
+                            (int) total,
+                            (int) acertos,
+                            (int) erros,
+                            pctArredondado,
+                            tier
+                    );
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public SimuladoStatsResponse obterStatsPorSimulado(Long simuladoId) {
+        int total = (int) tentativaRepository
+                .countBySimuladoIdAndFinalizadaTrue(simuladoId);
+
+        Double media = tentativaRepository
+                .calcularMediaDesempenhoPorSimulado(simuladoId);
+
+        double mediaArredondada = Math.round((media != null ? media : 0.0) * 10.0) / 10.0;
+
+        return new SimuladoStatsResponse(simuladoId, total, mediaArredondada);
+    }
+
     //===========
     // Lógica de Classificação
     //===========
@@ -288,7 +369,7 @@ public class TentativaSimuladoService {
         TipoErro tipoErro = resposta.getTipoErro();
 
         //em branco
-        if(respostaUsuario == null || respostaUsuario == RespostaTipo.BRANCO){
+        if (respostaUsuario == null || respostaUsuario == RespostaTipo.BRANCO) {
             resposta.setTipoResultado(null);
             resposta.setCaderno(null);
             return;
@@ -296,11 +377,11 @@ public class TentativaSimuladoService {
 
         boolean acertou = respostaUsuario == gabarito;
 
-        if(acertou){
-            if(confianca == NivelConfianca.CERTEZA){
+        if (acertou) {
+            if (confianca == NivelConfianca.CERTEZA) {
                 resposta.setTipoResultado(TipoResultado.ACERTO_CONSCIENTE);
                 resposta.setCaderno(Caderno.VERDE);
-            } else if (confianca == NivelConfianca.DUVIDA){
+            } else if (confianca == NivelConfianca.DUVIDA) {
                 resposta.setTipoResultado(TipoResultado.ACERTO_COM_DUVIDA);
                 resposta.setCaderno(Caderno.AMARELO);
             } else {
@@ -308,10 +389,10 @@ public class TentativaSimuladoService {
                 resposta.setCaderno(Caderno.AMARELO);
             }
         } else {
-            if(tipoErro == TipoErro.CONTEUDO){
+            if (tipoErro == TipoErro.CONTEUDO) {
                 resposta.setTipoResultado(TipoResultado.ERRO_CONTEUDO);
                 resposta.setCaderno(Caderno.VERMELHO);
-            } else if (tipoErro == TipoErro.INTERPRETACAO){
+            } else if (tipoErro == TipoErro.INTERPRETACAO) {
                 resposta.setTipoResultado(TipoResultado.ERRO_INTERPRETACAO);
                 resposta.setCaderno(confianca == NivelConfianca.DUVIDA ?
                         Caderno.AMARELO : Caderno.VERMELHO);
@@ -401,8 +482,8 @@ public class TentativaSimuladoService {
                 (int) verde
         );
     }
-    
-    private RespostaDetalheResponse toRespostaDetalheResponse(RespostaQuestao r){
+
+    private RespostaDetalheResponse toRespostaDetalheResponse(RespostaQuestao r) {
         SimuladoQuestao sq = r.getSimuladoQuestao();
         Questao q = sq.getQuestao();
 

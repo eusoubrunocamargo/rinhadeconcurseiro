@@ -38,3 +38,5 @@ frontend/.env.*.local
 # ========================
 *.log
 npm-debug.log*
+# Ignore agentes locais
+agents/

@@ -20,9 +20,9 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     const response = await api.get<User>('/api/v1/usuarios/me', {
       skipRedirect: true,
-    } as any);
+    });
     return response.data;
-  } catch (error) {
+  } catch {
     // Token inválido ou expirado
     localStorage.removeItem('auth_token');
     return null;

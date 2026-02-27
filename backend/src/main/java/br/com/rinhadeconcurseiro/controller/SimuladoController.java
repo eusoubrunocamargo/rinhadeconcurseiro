@@ -2,8 +2,10 @@ package br.com.rinhadeconcurseiro.controller;
 
 import br.com.rinhadeconcurseiro.dto.response.SimuladoDetalheResponse;
 import br.com.rinhadeconcurseiro.dto.response.SimuladoQuestaoResponse;
+import br.com.rinhadeconcurseiro.dto.response.SimuladoQuestaoResumoResponse;
 import br.com.rinhadeconcurseiro.dto.response.SimuladoResumoResponse;
 import br.com.rinhadeconcurseiro.enums.CadernoTipo;
+import br.com.rinhadeconcurseiro.repository.SimuladoQuestaoRepository;
 import br.com.rinhadeconcurseiro.service.SimuladoService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import java.util.List;
 public class SimuladoController {
 
     private final SimuladoService simuladoService;
+    private final SimuladoQuestaoRepository simuladoQuestaoRepository;
+
 
     /**
      * Lista todos os simulados ativos (disponíveis e futuros).
@@ -81,6 +85,27 @@ public class SimuladoController {
         } else {
             questoes = simuladoService.buscarQuestoes(id);
         }
+
+        return ResponseEntity.ok(questoes);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+// 1) ADICIONAR ao controller de simulados (SimuladoController ou TentativaSimuladoController)
+//    Injetar SimuladoQuestaoRepository se ainda não estiver presente.
+// ─────────────────────────────────────────────────────────────────────────────
+
+    @GetMapping("/simulados/{simuladoId}/questoes")
+    public ResponseEntity<List<SimuladoQuestaoResumoResponse>> listarQuestoes(
+            @PathVariable Long simuladoId) {
+
+        List<SimuladoQuestaoResumoResponse> questoes = simuladoQuestaoRepository
+                .findBySimuladoIdOrderByOrdemAsc(simuladoId)
+                .stream()
+                .map(sq -> new SimuladoQuestaoResumoResponse(
+                        sq.getId(),
+                        sq.getQuestao().getMateria().getNome()
+                ))
+                .toList();
 
         return ResponseEntity.ok(questoes);
     }

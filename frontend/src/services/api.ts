@@ -1,5 +1,15 @@
 import axios from 'axios';
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipRedirect?: boolean;
+  }
+  interface InternalAxiosRequestConfig {
+    skipRedirect?: boolean;
+  }
+}
+
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
   headers: {
@@ -20,7 +30,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const skipRedirect = (error.config as any)?.skipRedirect;
+    const skipRedirect = error.config?.skipRedirect;
 
     // Se receber 401 (não autenticado), limpa o token e redireciona
     if (error.response?.status === 401 && !skipRedirect) {

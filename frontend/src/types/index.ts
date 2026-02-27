@@ -167,11 +167,36 @@ export interface CadernoDetalhe {
   questoes: RespostaDetalhe[];
 }
 
+export interface ResumoAssunto {
+  assuntoId: number;
+  assuntoNome: string;
+  total: number;
+  acertos: number;
+  erros: number;
+  percentual: number;
+}
+
 export interface MeuProgresso {
   simuladosEmAndamento: number;
   simuladosFinalizados: number;
   mediaAproveitamento: number;
   cadernos: CadernoResumo;
+  topAssuntos: Record<string, ResumoAssunto[]>;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADICIONAR ao types.ts
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EstatisticaAssunto {
+  assuntoId: number;
+  assuntoNome: string;
+  materiaNome: string;
+  total: number;
+  acertos: number;
+  erros: number;
+  percentual: number;
+  tier: 'DOMINIO' | 'ATENCAO' | 'CRITICO';
 }
 
 // ============================================
