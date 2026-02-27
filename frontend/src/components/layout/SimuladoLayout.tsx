@@ -24,7 +24,7 @@ export default function SimuladoLayout({
 
       {/* Zona 2 — Conteúdo rolável */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-[580px] w-full mx-auto px-4 py-6 pb-4">
+        <div className="max-w-145 w-full mx-auto px-4 py-6 pb-4">
           {children}
         </div>
       </main>

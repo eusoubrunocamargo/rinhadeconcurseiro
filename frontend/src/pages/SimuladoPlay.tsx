@@ -237,7 +237,7 @@ export default function SimuladoPlay() {
 
   const slotNavRodape = (
     <div className="h-24 px-0">
-      <div className="max-w-[580px] w-full mx-auto px-4 h-full">
+      <div className="max-w-145 w-full mx-auto px-4 h-full">
         <div className="grid grid-cols-[1fr_1.4fr_1fr] gap-1.5 md:gap-2 h-full items-stretch py-2">
 
           {/* Esquerda — Anterior */}
@@ -352,7 +352,7 @@ export default function SimuladoPlay() {
           {/* Painel */}
           <div
             className="fixed bottom-20 right-4 z-50 rounded-3xl shadow-2xl overflow-hidden"
-            style={{ width: 'min(340px, calc(100vw - 32px))', backgroundColor: '#fff', border: '1px solid #E5E5E5' }}
+            style={{ width: 'min(340px, calc(100vw - 32px))', maxHeight: 'calc(100dvh - 120px)', backgroundColor: '#fff', border: '1px solid #E5E5E5', overflowY: 'auto' }}
           >
             {/* Cabeçalho do mapa */}
             <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #F0F0F0' }}>
@@ -381,7 +381,7 @@ export default function SimuladoPlay() {
                 { cor: '#DC2626', bg: '#FFF5F5', label: 'Errado' },
                 { cor: '#D97706', bg: '#FFFBEB', label: 'Marcada' },
                 { cor: '#999',    bg: '#F5F5F5', label: 'Em branco' },
-              ].map(({ cor, bg, label }) => (
+              ].map(({ cor, label }) => (
                 <div key={label} className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cor }} />
                   <span className="text-[9px] font-medium" style={{ color: '#999' }}>{label}</span>
@@ -390,7 +390,7 @@ export default function SimuladoPlay() {
             </div>
 
             {/* Grid de questões */}
-            <div className="px-5 pb-5 pt-2 grid grid-cols-10 gap-1.5 max-h-56 overflow-y-auto">
+            <div className="px-5 pb-5 pt-2 grid grid-cols-10 gap-1.5 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 280px)' }}>
               {simulado.questoes.map((sq, index) => {
                 const item    = respostas.get(sq.questaoId);
                 const isAtual = index === questaoAtual;
