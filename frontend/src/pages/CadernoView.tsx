@@ -264,7 +264,7 @@ export default function CadernoView() {
           <span>Caderno ${config.label} · ${dataImpressao}</span>
         </div>
 
-        <script>window.onload = () => { window.print(); }<\/script>
+        <script>window.onload = () => { window.print(); }</script>
       </body>
       </html>
     `;
