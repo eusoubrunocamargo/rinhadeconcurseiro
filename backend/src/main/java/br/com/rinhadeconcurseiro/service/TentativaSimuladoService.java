@@ -8,6 +8,7 @@ import br.com.rinhadeconcurseiro.enums.*;
 import br.com.rinhadeconcurseiro.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TentativaSimuladoService {
 
     private final TentativaSimuladoRepository tentativaRepository;
@@ -39,8 +41,15 @@ public class TentativaSimuladoService {
 
         if (emAndamento.isPresent()) {
             if (refazer) {
-                // Excluir APENAS a tentativa em andamento (não as finalizadas)
-                excluirTentativa(emAndamento.get());
+                Long tentativaId = emAndamento.get().getId();
+                int deleted = tentativaRepository.deleteByIdAndUsuarioIdAndFinalizadaFalse(tentativaId, usuarioId);
+                if (deleted == 0) {
+                    log.warn("Conflito ao refazer tentativa: tentativaId={} usuarioId={} motivo=nao_excluida_por_estado",
+                            tentativaId, usuarioId);
+                } else {
+                    log.info("Tentativa em andamento excluída para refazer: tentativaId={} usuarioId={}",
+                            tentativaId, usuarioId);
+                }
             } else {
                 // Retornar tentativa existente para continuar
                 TentativaSimulado tentativa = emAndamento.get();
@@ -89,19 +98,16 @@ public class TentativaSimuladoService {
         return iniciar(simuladoId, usuarioId, false);
     }
 
-    private void excluirTentativa(TentativaSimulado tentativa) {
-        respostaRepository.deleteByTentativaId(tentativa.getId());
-        tentativaRepository.delete(tentativa);
-    }
-
     //===========
     // Salvar Respostas
     //===========
 
     @Transactional
     public void salvarRespostas(Long tentativaId, Long usuarioId, SalvarRespostasRequest request) {
-        TentativaSimulado tentativa = getTentativaDoUsuario(tentativaId, usuarioId);
+        TentativaSimulado tentativa = getTentativaDoUsuarioComLock(tentativaId, usuarioId);
         if (tentativa.getFinalizada()) {
+            log.warn("Conflito ao salvar respostas: tentativaId={} usuarioId={} motivo=tentativa_finalizada",
+                    tentativaId, usuarioId);
             throw new IllegalStateException("Tentativa já finalizada");
         }
 
@@ -138,9 +144,11 @@ public class TentativaSimuladoService {
 
     @Transactional
     public TentativaDetalheResponse finalizar(Long tentativaId, Long usuarioId) {
-        TentativaSimulado tentativa = getTentativaDoUsuario(tentativaId, usuarioId);
+        TentativaSimulado tentativa = getTentativaDoUsuarioComLock(tentativaId, usuarioId);
         if (tentativa.getFinalizada()) {
-            throw new IllegalStateException("Tentativa já finalizada");
+            log.info("Finalização idempotente: tentativaId={} usuarioId={} motivo=ja_finalizada",
+                    tentativaId, usuarioId);
+            return toDetalheResponse(tentativa);
         }
 
         //classificar cada resposta
@@ -169,6 +177,8 @@ public class TentativaSimuladoService {
         tentativa.setDataFim(LocalDateTime.now());
 
         tentativaRepository.save(tentativa);
+        log.info("Tentativa finalizada com sucesso: tentativaId={} usuarioId={} acertos={} erros={} emBranco={}",
+                tentativaId, usuarioId, acertos, erros, emBranco);
 
         return toDetalheResponse(tentativa);
     }
@@ -410,6 +420,16 @@ public class TentativaSimuladoService {
         return tentativaRepository.findByIdAndUsuarioId(tentativaId, usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Tentativa não encontrada"));
 
+    }
+
+    private TentativaSimulado getTentativaDoUsuarioComLock(Long tentativaId, Long usuarioId) {
+        Optional<TentativaSimulado> locked = tentativaRepository.findByIdAndUsuarioIdWithLock(tentativaId, usuarioId);
+        if (locked == null) {
+            locked = Optional.empty();
+        }
+
+        return locked.or(() -> tentativaRepository.findByIdAndUsuarioId(tentativaId, usuarioId))
+                .orElseThrow(() -> new EntityNotFoundException("Tentativa não encontrada"));
     }
 
     private TentativaResumoResponse toResumoResponse(TentativaSimulado t) {

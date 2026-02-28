@@ -1,7 +1,10 @@
 package br.com.rinhadeconcurseiro.repository;
 
 import br.com.rinhadeconcurseiro.entity.TentativaSimulado;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,8 +28,25 @@ public interface TentativaSimuladoRepository extends JpaRepository<TentativaSimu
     @EntityGraph(attributePaths = {"respostas", "respostas.simuladoQuestao"})
     Optional<TentativaSimulado> findByIdAndUsuarioId(Long id, Long usuarioId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @EntityGraph(attributePaths = {"respostas", "respostas.simuladoQuestao"})
+    @Query("""
+            SELECT t FROM TentativaSimulado t
+            WHERE t.id = :id AND t.usuario.id = :usuarioId
+            """)
+    Optional<TentativaSimulado> findByIdAndUsuarioIdWithLock(@Param("id") Long id, @Param("usuarioId") Long usuarioId);
+
     //verificar se o usuário tem tentativa em andamento para um simulado
     Optional<TentativaSimulado> findByUsuarioIdAndSimuladoIdAndFinalizadaFalse(Long usuarioId, Long simuladoId);
+
+    @Modifying
+    @Query("""
+            DELETE FROM TentativaSimulado t
+            WHERE t.id = :id
+              AND t.usuario.id = :usuarioId
+              AND t.finalizada = false
+            """)
+    int deleteByIdAndUsuarioIdAndFinalizadaFalse(@Param("id") Long id, @Param("usuarioId") Long usuarioId);
 
     //contar tentativas finalizadas do usuário
     long countByUsuarioIdAndFinalizadaTrue(Long usuarioId);

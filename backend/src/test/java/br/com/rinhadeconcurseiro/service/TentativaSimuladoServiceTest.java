@@ -173,6 +173,37 @@ class TentativaSimuladoServiceTest {
                     .isInstanceOf(EntityNotFoundException.class)
                     .hasMessageContaining("Simulado não encontrado");
         }
+
+        @SuppressWarnings("null")
+        @Test
+        @DisplayName("Deve continuar fluxo de refazer mesmo com corrida na exclusão condicional")
+        void deveContinuarFluxoRefazerComCorridaNaExclusao() {
+            TentativaSimulado tentativaExistente = TentativaSimulado.builder()
+                    .id(50L)
+                    .usuario(usuario)
+                    .simulado(simulado)
+                    .finalizada(false)
+                    .build();
+
+            when(tentativaRepository.findByUsuarioIdAndSimuladoIdAndFinalizadaFalse(1L, 1L))
+                    .thenReturn(Optional.of(tentativaExistente));
+            when(tentativaRepository.deleteByIdAndUsuarioIdAndFinalizadaFalse(50L, 1L))
+                    .thenReturn(0);
+            when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+            when(simuladoRepository.findById(1L)).thenReturn(Optional.of(simulado));
+            when(tentativaRepository.save(any(TentativaSimulado.class)))
+                    .thenAnswer(inv -> {
+                        TentativaSimulado t = inv.getArgument(0);
+                        t.setId(101L);
+                        return t;
+                    });
+
+            TentativaIniciadaResponse response = service.iniciar(1L, 1L, true);
+
+            assertThat(response.tentativaId()).isEqualTo(101L);
+            verify(tentativaRepository).deleteByIdAndUsuarioIdAndFinalizadaFalse(50L, 1L);
+            verify(tentativaRepository).save(any(TentativaSimulado.class));
+        }
     }
 
     // ========================================
@@ -470,6 +501,30 @@ class TentativaSimuladoServiceTest {
             assertThat(response.totalAmarelo()).isEqualTo(0);
             assertThat(response.totalVerde()).isEqualTo(0);
             assertThat(tentativa.getRespostas().get(0).getCaderno()).isNull();
+        }
+
+        @SuppressWarnings("null")
+        @Test
+        @DisplayName("Finalizar deve ser idempotente quando tentativa já está finalizada")
+        void finalizarDeveSerIdempotente() {
+            TentativaSimulado tentativa = criarTentativaComResposta(
+                    RespostaTipo.CERTO, NivelConfianca.CERTEZA, null, RespostaTipo.CERTO);
+            tentativa.setFinalizada(true);
+            tentativa.setAcertos(1);
+            tentativa.setErros(0);
+            tentativa.setEmBranco(0);
+            tentativa.setPontuacao(1);
+            tentativa.setDataFim(LocalDateTime.now());
+
+            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+                    .thenReturn(Optional.of(tentativa));
+
+            TentativaDetalheResponse response = service.finalizar(1L, 1L);
+
+            assertThat(response.finalizada()).isTrue();
+            assertThat(response.acertos()).isEqualTo(1);
+            assertThat(response.erros()).isEqualTo(0);
+            verify(tentativaRepository, never()).save(any());
         }
     }
 
