@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, NavLink } from 'react-router-dom';
 import type { CadernoDetalhe, Caderno, RespostaDetalhe, ResumoAssunto } from '../types';
 import { getCadernoDetalhe, getResumoCaderno } from '../services/tentativa';
@@ -56,26 +56,32 @@ export default function CadernoView() {
   const cadernoKey = caderno?.toUpperCase() as Caderno;
   const config = CADERNO_CONFIG[cadernoKey as keyof typeof CADERNO_CONFIG];
 
-  useEffect(() => {
-    if (cadernoKey && config) loadCaderno();
+  // useEffect(() => {
+  //   if (cadernoKey && config) loadCaderno();
+  // }, [cadernoKey]);
+
+  // async function loadCaderno() {
+  const loadCaderno = useCallback(async () => {
+    try {
+        setLoading(true);
+        setError(null);
+        const [data, resumoData] = await Promise.all([
+          getCadernoDetalhe(cadernoKey),
+          getResumoCaderno(cadernoKey),
+        ]);
+        setDados(data);
+        setResumo(resumoData);
+      } catch {
+        setError('Não foi possível carregar o caderno.');
+      } finally {
+        setLoading(false);
+      }
   }, [cadernoKey]);
 
-  async function loadCaderno() {
-    try {
-      setLoading(true);
-      setError(null);
-      const [data, resumoData] = await Promise.all([
-        getCadernoDetalhe(cadernoKey),
-        getResumoCaderno(cadernoKey),
-      ]);
-      setDados(data);
-      setResumo(resumoData);
-    } catch {
-      setError('Não foi possível carregar o caderno.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    if (cadernoKey && config) loadCaderno();
+  }, [cadernoKey, config, loadCaderno]);
+
 
   // ── Impressão ────────────────────────────────────────────────────
   function handlePrint() {

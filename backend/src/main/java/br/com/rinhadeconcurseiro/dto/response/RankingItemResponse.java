@@ -8,7 +8,7 @@ public record RankingItemResponse(
         String fotoUrl,
         Integer pontuacao,
         Integer acertos,
-        Integer errors,
+        Integer erros,
         Integer emBranco,
         Double percentualAcerto,
         Integer simuladosFinalizados,

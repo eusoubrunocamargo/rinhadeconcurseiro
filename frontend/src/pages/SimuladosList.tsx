@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import type { Simulado, TentativaResumo } from '../types';
 import { getSimulados } from '../services/simulado';
@@ -24,9 +24,16 @@ export default function SimuladosList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { loadDados(); }, []);
+  // useEffect(() => { loadDados(); }, []);
 
-  async function loadDados() {
+  const isDisponivel = useCallback((dataDisponivel: string): boolean => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return new Date(dataDisponivel + 'T00:00:00') <= hoje;
+  }, []);
+
+  const loadDados = useCallback(async () => {
+    
     try {
       setLoading(true);
       const [simuladosData, emAndamentoData, finalizadosData] = await Promise.all([
@@ -66,13 +73,11 @@ export default function SimuladosList() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [isDisponivel]);
 
-  function isDisponivel(dataDisponivel: string): boolean {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    return new Date(dataDisponivel + 'T00:00:00') <= hoje;
-  }
+  useEffect(() => {
+    loadDados();
+  }, [loadDados]);
 
   function diasAteDisponivel(dataDisponivel: string): number {
     const hoje = new Date();

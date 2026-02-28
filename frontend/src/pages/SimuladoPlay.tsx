@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { SimuladoDetalhado, NivelConfianca, RespostaRequest } from '../types';
 import { getSimuladoById } from '../services/simulado';
@@ -18,79 +18,111 @@ export default function SimuladoPlay() {
   const navigate = useNavigate();
   const location = useLocation();
   const tentativaIdFromState = location.state?.tentativaId as number | undefined;
-  const refazerFromState = location.state?.refazer as boolean | undefined;
+  const refazerFromState     = location.state?.refazer     as boolean | undefined;
 
-  const [simulado, setSimulado] = useState<SimuladoDetalhado | null>(null);
-  const [tentativaId, setTentativaId] = useState<number | null>(tentativaIdFromState ?? null);
-  const [respostas, setRespostas] = useState<Map<number, RespostaLocal>>(new Map());
-  const [questaoAtual, setQuestaoAtual] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [salvando, setSalvando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [simulado,       setSimulado]       = useState<SimuladoDetalhado | null>(null);
+  const [tentativaId,    setTentativaId]    = useState<number | null>(tentativaIdFromState ?? null);
+  const [respostas,      setRespostas]      = useState<Map<number, RespostaLocal>>(new Map());
+  const [questaoAtual,   setQuestaoAtual]   = useState(0);
+  const [loading,        setLoading]        = useState(true);
+  const [salvando,       setSalvando]       = useState(false);
+  const [error,          setError]          = useState<string | null>(null);
+  const [modalFinalizar, setModalFinalizar] = useState(false);
+  const [mapaAberto,     setMapaAberto]     = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadSimulado(parseInt(id));
-    }
-  }, [id]);
-
-  async function loadSimulado(simuladoId: number) {
-    try {
-      setLoading(true);
-
-      // Carregar dados do simulado
-      const data = await getSimuladoById(simuladoId);
-      setSimulado(data);
-
-      // Se já temos tentativaId, carregar respostas existentes
-      if (tentativaIdFromState && !refazerFromState) {
-        setTentativaId(tentativaIdFromState);
-        await carregarRespostasExistentes(tentativaIdFromState, data);
-      } else {
-        // Criar nova tentativa
-        const tentativa = await iniciarSimulado(simuladoId, refazerFromState ?? false);
-        setTentativaId(tentativa.tentativaId);
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar simulado.';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function carregarRespostasExistentes(tentId: number, simuladoData: SimuladoDetalhado) {
+  // useEffect(() => {
+  //   if (id) loadSimulado(parseInt(id));
+  // }, [id]);
+  const carregarRespostasExistentes = useCallback(async (tentId: number, simuladoData: SimuladoDetalhado) => {
     try {
       const tentativa = await getTentativaById(tentId);
-
-      // Mapear respostas do backend para o estado local
-      const mapaRespostas = new Map<number, RespostaLocal>();
+      const mapa = new Map<number, RespostaLocal>();
 
       tentativa.respostas.forEach((r) => {
-        // Encontrar o questaoId a partir do simuladoQuestaoId
         const sq = simuladoData.questoes.find((q) => q.id === r.simuladoQuestaoId);
         if (sq && r.resposta) {
-          mapaRespostas.set(sq.questaoId, {
-            resposta: r.resposta === 'CERTO' ? true : r.resposta === 'ERRADO' ? false : null,
+          mapa.set(sq.questaoId, {
+            resposta:  r.resposta === 'CERTO' ? true : r.resposta === 'ERRADO' ? false : null,
             confianca: r.confianca,
-            confirmada: true, // Já estava salva
+            confirmada: true,
           });
         }
       });
 
-      setRespostas(mapaRespostas);
+      setRespostas(mapa);
 
-      // Ir para a primeira questão não respondida
-      const primeiraVazia = simuladoData.questoes.findIndex(
-        (sq) => !mapaRespostas.has(sq.questaoId)
-      );
-      if (primeiraVazia !== -1) {
-        setQuestaoAtual(primeiraVazia);
-      }
+      const primeiraVazia = simuladoData.questoes.findIndex((sq) => !mapa.has(sq.questaoId));
+      if (primeiraVazia !== -1) setQuestaoAtual(primeiraVazia);
     } catch (err) {
       console.error('Erro ao carregar respostas existentes:', err);
     }
-  }
+  }, []);
+
+  // const loadSimulado = useCallback(async (simuladoId: number) => {
+  //   try {
+  //     setLoading(true);
+  //     const data = await getSimuladoById(simuladoId);
+  //     setSimulado(data);
+
+
+  // Fecha mapa ao trocar questão
+  useEffect(() => {
+    setMapaAberto(false);
+  }, [questaoAtual]);
+
+  // ── Carregamento ──────────────────────────────────────────────────────────
+
+  const loadSimulado = useCallback(async (simuladoId: number) => {
+    try {
+      setLoading(true);
+      const data = await getSimuladoById(simuladoId);
+      setSimulado(data);
+
+      if (tentativaIdFromState && !refazerFromState) {
+        setTentativaId(tentativaIdFromState);
+        await carregarRespostasExistentes(tentativaIdFromState, data);
+      } else {
+        const tentativa = await iniciarSimulado(simuladoId, refazerFromState ?? false);
+        setTentativaId(tentativa.tentativaId);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar simulado.');
+    } finally {
+      setLoading(false);
+    }
+  }, [tentativaIdFromState, refazerFromState, carregarRespostasExistentes]);
+  
+   useEffect(() => {
+    if (id) loadSimulado(parseInt(id));
+  }, [id, loadSimulado]);
+
+
+  // async function carregarRespostasExistentes(tentId: number, simuladoData: SimuladoDetalhado) {
+  //   try {
+  //     const tentativa = await getTentativaById(tentId);
+  //     const mapa = new Map<number, RespostaLocal>();
+
+  //     tentativa.respostas.forEach((r) => {
+  //       const sq = simuladoData.questoes.find((q) => q.id === r.simuladoQuestaoId);
+  //       if (sq && r.resposta) {
+  //         mapa.set(sq.questaoId, {
+  //           resposta:  r.resposta === 'CERTO' ? true : r.resposta === 'ERRADO' ? false : null,
+  //           confianca: r.confianca,
+  //           confirmada: true,
+  //         });
+  //       }
+  //     });
+
+  //     setRespostas(mapa);
+
+  //     const primeiraVazia = simuladoData.questoes.findIndex((sq) => !mapa.has(sq.questaoId));
+  //     if (primeiraVazia !== -1) setQuestaoAtual(primeiraVazia);
+  //   } catch (err) {
+  //     console.error('Erro ao carregar respostas existentes:', err);
+  //   }
+  // }
+
+  // ── Handlers de resposta ──────────────────────────────────────────────────
 
   function handleResponder(questaoId: number, valor: boolean | null) {
     setRespostas((prev) => {
@@ -99,11 +131,7 @@ export default function SimuladoPlay() {
         novo.delete(questaoId);
       } else {
         const atual = novo.get(questaoId);
-        novo.set(questaoId, {
-          resposta: valor,
-          confianca: atual?.confianca ?? null,
-          confirmada: false,
-        });
+        novo.set(questaoId, { resposta: valor, confianca: atual?.confianca ?? null, confirmada: false });
       }
       return novo;
     });
@@ -111,18 +139,16 @@ export default function SimuladoPlay() {
 
   function handleConfianca(questaoId: number, valor: NivelConfianca) {
     setRespostas((prev) => {
-      const novo = new Map(prev);
+      const novo  = new Map(prev);
       const atual = novo.get(questaoId);
-      if (atual) {
-        novo.set(questaoId, { ...atual, confianca: valor, confirmada: false });
-      }
+      if (atual) novo.set(questaoId, { ...atual, confianca: valor, confirmada: false });
       return novo;
     });
   }
 
   function handleConfirmar(questaoId: number) {
     setRespostas((prev) => {
-      const novo = new Map(prev);
+      const novo  = new Map(prev);
       const atual = novo.get(questaoId);
       if (atual && atual.resposta !== null && atual.confianca !== null) {
         novo.set(questaoId, { ...atual, confirmada: true });
@@ -130,29 +156,28 @@ export default function SimuladoPlay() {
       return novo;
     });
 
-    // Avançar para próxima questão automaticamente
     if (simulado && questaoAtual < simulado.questoes.length - 1) {
       setQuestaoAtual((prev) => prev + 1);
     }
   }
 
+  // ── Payload & ações ───────────────────────────────────────────────────────
+
   function montarPayload(): RespostaRequest[] {
     if (!simulado) return [];
-
     return simulado.questoes.map((sq) => {
       const r = respostas.get(sq.questaoId);
       return {
         simuladoQuestaoId: sq.id,
-        resposta: r?.resposta === true ? 'CERTO' : r?.resposta === false ? 'ERRADO' : null,
+        resposta:  r?.resposta === true ? 'CERTO' : r?.resposta === false ? 'ERRADO' : null,
         confianca: r?.confianca ?? null,
-        tipoErro: null,
+        tipoErro:  null,
       };
     });
   }
 
   async function handlePausar() {
     if (!simulado || !tentativaId) return;
-
     try {
       setSalvando(true);
       await salvarRespostas(tentativaId, { respostas: montarPayload() });
@@ -164,31 +189,18 @@ export default function SimuladoPlay() {
     }
   }
 
-  async function handleFinalizar() {
+  async function handleFinalizarConfirmado() {
     if (!simulado || !tentativaId) return;
-
+    setModalFinalizar(false);
     try {
       setSalvando(true);
-
-      const respostasPayload = montarPayload();
-
-      // Salvar respostas na API
-      await salvarRespostas(tentativaId, { respostas: respostasPayload });
-
-      // Salvar dados localmente para a tela de feedback
+      const payload = montarPayload();
+      await salvarRespostas(tentativaId, { respostas: payload });
       sessionStorage.setItem(
         `pendente_${tentativaId}`,
-        JSON.stringify({
-          simulado,
-          tentativaId,
-          respostas: respostasPayload,
-        })
+        JSON.stringify({ simulado, tentativaId, respostas: payload })
       );
-
-      // Navegar para feedback
-      navigate(`/simulados/${id}/feedback`, {
-        state: { tentativaId },
-      });
+      navigate(`/simulados/${id}/feedback`, { state: { tentativaId } });
     } catch {
       setError('Erro ao salvar respostas. Tente novamente.');
     } finally {
@@ -196,11 +208,13 @@ export default function SimuladoPlay() {
     }
   }
 
+  // ── Estados de carregamento e erro ────────────────────────────────────────
+
   if (loading) {
     return (
       <Layout>
         <div className="flex items-center justify-center py-12">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
       </Layout>
     );
@@ -209,271 +223,328 @@ export default function SimuladoPlay() {
   if (error || !simulado) {
     return (
       <Layout>
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+        <div className="p-4 rounded-xl text-sm font-medium" style={{ backgroundColor: '#FFF5F5', color: '#DC2626' }}>
           {error || 'Simulado não encontrado.'}
         </div>
       </Layout>
     );
   }
 
+  // ── Derivados ─────────────────────────────────────────────────────────────
+
   const questaoAtualData = simulado.questoes[questaoAtual];
-  const totalQuestoes = simulado.questoes.length;
-  const respondidas = Array.from(respostas.values()).filter((r) => r.confirmada).length;
-  const respostaAtual = respostas.get(questaoAtualData.questaoId);
-  const podeConfirmar = respostaAtual?.resposta !== null && respostaAtual?.confianca !== null;
+  const totalQuestoes    = simulado.questoes.length;
+  const respondidas      = Array.from(respostas.values()).filter((r) => r.confirmada).length;
+  const emBranco         = totalQuestoes - Array.from(respostas.values()).filter((r) => r.resposta !== null).length;
+  const respostaAtual    = respostas.get(questaoAtualData.questaoId);
+  const podeConfirmar    = respostaAtual?.resposta !== null && respostaAtual?.confianca !== null;
 
-  /*SLOTS para o novo design UIUX*/
+  // ── Slots ─────────────────────────────────────────────────────────────────
+
   const slotHeader = (
-    <div className="px-6 h-16 flex items-center justify-between gap-8">
-
-      <div className="flex items-center gap-6">
+    <div className="px-6 h-14 flex items-center justify-between gap-8">
+      <div className="flex items-center gap-5">
+        {/* Título */}
         <div>
-          <h1 className="text-xs font-extrabold uppercase tracking-tighter text-dark-text">
+          <h1 className="text-xs font-black uppercase tracking-tighter text-dark-text leading-none">
             {simulado.titulo}
           </h1>
-          <p className="text-[10px] text-subtle-text font-medium">
-            {simulado.questoes.length} questões
+          <p className="text-[10px] text-subtle-text font-medium mt-0.5">
+            {totalQuestoes} questões
           </p>
         </div>
 
+        {/* Progresso */}
         <div className="hidden md:flex items-center gap-2">
-          <span className="text-sm font-black text-dark-text">
+          <span className="text-xs font-black text-dark-text">
             {respondidas}
             <span className="text-subtle-text font-normal"> / {totalQuestoes}</span>
           </span>
-          <div className="w-24 h-1.5 bg-border-hub rounded-full">
+          <div className="w-28 h-1 rounded-full" style={{ backgroundColor: '#EEEEEE' }}>
             <div
-              className="h-1.5 bg-accent rounded-full transition-all"
-              style={{ width: `${(respondidas / totalQuestoes) * 100}%` }}
+              className="h-1 rounded-full transition-all duration-500"
+              style={{ width: `${(respondidas / totalQuestoes) * 100}%`, backgroundColor: '#1A1A1A' }}
             />
           </div>
         </div>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <button
-          onClick={handlePausar}
-          disabled={salvando}
-          className="p-2 text-subtle-text hover:text-dark-text transition-colors"
-          title="Pausar e sair"
-        >
-          ⏸
-        </button>
-      </div>
-
-    </div>
-  );
-
-  const slotMinimapa = (
-    <div className="w-full overflow-x-auto">
-      <div className="flex items-center justify-start min-w-full px-4 py-3 gap-1.5">
-        {simulado.questoes.map((sq, index) => {
-          const item = respostas.get(sq.questaoId);
-          const isAtual = index === questaoAtual;
-
-          const bg =
-            isAtual ? '#ffffff'
-              : item?.confirmada && item.resposta === true ? '#a3ffac'
-                : item?.confirmada && item.resposta === false ? '#ff8097'
-                  : item?.resposta !== null ? '#FEF9C3'
-                    : '#ffffff';
-
-          const border =
-            isAtual ? '2px solid #1A1A1A'
-              : item?.confirmada && item.resposta === true ? '1px solid #a3ffac'
-                : item?.confirmada && item.resposta === false ? '1px solid #ff8097'
-                  : item?.resposta !== null ? '1px solid #EAB308'
-                    : '1px solid #E5E5E5';
-
-          return (
-            <button
-              key={sq.id}
-              onClick={() => setQuestaoAtual(index)}
-              title={`Questão ${index + 1}`}
-              style={{ backgroundColor: bg, border, transform: isAtual ? 'scale(1.25)' : undefined }}
-              className="shrink-0 w-3 h-3 rounded-full transition-all duration-200 cursor-pointer"
-            />
-          );
-        })}
       </div>
     </div>
   );
 
   const slotNavRodape = (
-    <div className="px-8 h-20 flex items-center justify-between">
+    <div className="h-24 px-0">
+      <div className="max-w-145 w-full mx-auto px-4 h-full">
+        <div className="grid grid-cols-[1fr_1.4fr_1fr] gap-1.5 md:gap-2 h-full items-stretch py-2">
 
-      <button
-        onClick={() => setQuestaoAtual((prev) => prev - 1)}
-        disabled={questaoAtual === 0}
-        className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border-hub hover:bg-background-hub transition-all font-bold text-dark-text disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-      >
-        ← Anterior
-      </button>
+          {/* Esquerda — Anterior */}
+          <button
+            onClick={() => setQuestaoAtual((prev) => prev - 1)}
+            disabled={questaoAtual === 0}
+            className="h-full w-full flex items-center justify-center gap-1.5 px-2 md:px-3 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all active:scale-95"
+            style={
+              questaoAtual === 0
+                ? { backgroundColor: '#F5F5F5', color: '#CCC', cursor: 'not-allowed', border: '1px solid #EEEEEE' }
+                : { backgroundColor: '#F5F5F5', color: '#1A1A1A', border: '1px solid #E5E5E5' }
+            }
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_back</span>
+            Anterior
+          </button>
 
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handlePausar}
-          disabled={salvando}
-          className="px-5 py-3 rounded-xl border border-border-hub bg-white font-bold text-sm text-dark-text hover:bg-background-hub transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {salvando ? 'Salvando...' : 'Pausar'}
-        </button>
-        <button
-          onClick={handleFinalizar}
-          disabled={salvando}
-          className="px-8 py-3 rounded-xl bg-accent text-white font-bold text-sm hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {salvando ? 'Salvando...' : 'Finalizar'}
-        </button>
+          {/* Centro — Pausar + Finalizar */}
+          <div className="grid grid-rows-2 gap-1.5 md:gap-2 h-full">
+            <button
+              onClick={handlePausar}
+              disabled={salvando}
+              className="h-full w-full flex items-center justify-center gap-1.5 px-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+              style={{ backgroundColor: '#F5F5F5', color: '#666', border: '1px solid #E5E5E5' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>pause</span>
+              {salvando ? 'Salvando...' : 'Pausar'}
+            </button>
+            <button
+              onClick={() => setModalFinalizar(true)}
+              disabled={salvando}
+              className="h-full w-full flex items-center justify-center gap-1.5 px-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+              style={{ backgroundColor: '#1A1A1A', color: '#fff' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>check_circle</span>
+              {salvando ? 'Salvando...' : 'Finalizar'}
+            </button>
+          </div>
+
+          {/* Direita — Próxima */}
+          <button
+            onClick={() => setQuestaoAtual((prev) => prev + 1)}
+            disabled={questaoAtual === totalQuestoes - 1}
+            className="h-full w-full flex items-center justify-center gap-1.5 px-2 md:px-3 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all active:scale-95"
+            style={
+              questaoAtual === totalQuestoes - 1
+                ? { backgroundColor: '#F5F5F5', color: '#CCC', cursor: 'not-allowed', border: '1px solid #EEEEEE' }
+                : { backgroundColor: '#F5F5F5', color: '#1A1A1A', border: '1px solid #E5E5E5' }
+            }
+          >
+            Próxima
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={() => setQuestaoAtual((prev) => prev + 1)}
-        disabled={questaoAtual === totalQuestoes - 1}
-        className="flex items-center gap-3 px-6 py-3 rounded-xl border border-border-hub hover:bg-background-hub transition-all font-bold text-dark-text disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-      >
-        Próxima →
-      </button>
-
     </div>
   );
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    // <Layout>
-    //   {/* Header do Simulado */}
-    //   <div className="mb-6">
-    //     <h1 className="text-xl font-bold text-gray-800">{simulado.titulo}</h1>
-    //     <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-    //       <span>
-    //         {respondidas} de {totalQuestoes} confirmadas
-    //       </span>
-    //       <div className="flex-1 h-2 bg-gray-200 rounded-full max-w-xs">
-    //         <div
-    //           className="h-2 bg-blue-600 rounded-full transition-all"
-    //           style={{ width: `${(respondidas / totalQuestoes) * 100}%` }}
-    //         ></div>
-    //       </div>
-    //     </div>
-    //   </div>
+    <>
+      <SimuladoLayout header={slotHeader} navRodape={slotNavRodape}>
 
-    //   {/* Questão Atual */}
-    //   <QuestaoCard
-    //     numero={questaoAtualData.ordem}
-    //     comando={questaoAtualData.comando}
-    //     materia={questaoAtualData.materiaNome}
-    //     assunto={questaoAtualData.assuntoNome}
-    //     resposta={respostaAtual?.resposta ?? null}
-    //     confianca={respostaAtual?.confianca ?? null}
-    //     confirmada={respostaAtual?.confirmada ?? false}
-    //     onResponder={(valor) => handleResponder(questaoAtualData.questaoId, valor)}
-    //     onConfianca={(valor) => handleConfianca(questaoAtualData.questaoId, valor)}
-    //     onConfirmar={() => handleConfirmar(questaoAtualData.questaoId)}
-    //     podeConfirmar={podeConfirmar && !respostaAtual?.confirmada}
-    //   />
+        {/* Card da questão */}
+        <QuestaoCard
+          numero={questaoAtualData.ordem}
+          comando={questaoAtualData.comando}
+          materia={questaoAtualData.materiaNome}
+          assunto={questaoAtualData.assuntoNome}
+          resposta={respostaAtual?.resposta ?? null}
+          confianca={respostaAtual?.confianca ?? null}
+          confirmada={respostaAtual?.confirmada ?? false}
+          onResponder={(valor) => handleResponder(questaoAtualData.questaoId, valor)}
+          onConfianca={(valor) => handleConfianca(questaoAtualData.questaoId, valor)}
+          onConfirmar={() => handleConfirmar(questaoAtualData.questaoId)}
+          podeConfirmar={podeConfirmar && !respostaAtual?.confirmada}
+        />
 
-    //   {/* Navegação */}
-    //   <div className="flex items-center justify-between mt-6">
-    //     <button
-    //       onClick={() => setQuestaoAtual((prev) => prev - 1)}
-    //       disabled={questaoAtual === 0}
-    //       className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-    //     >
-    //       ← Anterior
-    //     </button>
+        {respondidas < totalQuestoes && (
+          <p className="text-[11px] text-subtle-text mt-4 text-center">
+            {totalQuestoes - respondidas} questões não confirmadas
+          </p>
+        )}
 
-    //     <div className="flex gap-1.5 overflow-x-auto max-w-md py-1 px-1">
-    //       {simulado.questoes.map((sq, index) => {
-    //         const item = respostas.get(sq.questaoId);
-    //         const isAtual = index === questaoAtual;
+      </SimuladoLayout>
 
-    //         let corClasse = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
-    //         if (isAtual) {
-    //           corClasse = 'bg-blue-600 text-white';
-    //         } else if (item?.confirmada) {
-    //           // Confirmada: verde ou vermelho baseado na resposta
-    //           corClasse = item.resposta === true
-    //             ? 'bg-green-500 text-white'
-    //             : 'bg-red-500 text-white';
-    //         } else if (item?.resposta !== null) {
-    //           // Marcada mas não confirmada
-    //           corClasse = 'bg-yellow-200 text-yellow-800';
-    //         }
+      {/* ── Botão flutuante do mapa ───────────────────────────────────────── */}
+      <button
+        onClick={() => setMapaAberto((v) => !v)}
+        className="fixed bottom-24 right-4 z-50 flex items-center gap-2 px-3 py-2.5 rounded-2xl shadow-lg transition-all active:scale-95"
+        style={{ backgroundColor: '#1A1A1A', color: '#fff' }}
+        title="Mapa de questões"
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+          grid_view
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">
+          {respondidas}/{totalQuestoes}
+        </span>
+      </button>
 
-    //         return (
-    //           <button
-    //             key={sq.id}
-    //             onClick={() => setQuestaoAtual(index)}
-    //             className={`min-w-8 h-8 px-2 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${corClasse}`}
-    //           >
-    //             {index + 1}
-    //           </button>
-    //         );
-    //       })}
-    //     </div>
+      {/* ── Drawer do mapa ────────────────────────────────────────────────── */}
+      {mapaAberto && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
+            onClick={() => setMapaAberto(false)}
+          />
 
-    //     <button
-    //       onClick={() => setQuestaoAtual((prev) => prev + 1)}
-    //       disabled={questaoAtual === totalQuestoes - 1}
-    //       className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-    //     >
-    //       Próxima →
-    //     </button>
-    //   </div>
+          {/* Painel */}
+          <div
+            className="fixed bottom-20 right-4 z-50 rounded-3xl shadow-2xl overflow-hidden"
+            style={{ width: 'min(340px, calc(100vw - 32px))', maxHeight: 'calc(100dvh - 120px)', backgroundColor: '#fff', border: '1px solid #E5E5E5', overflowY: 'auto' }}
+          >
+            {/* Cabeçalho do mapa */}
+            <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #F0F0F0' }}>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-dark-text">
+                  Mapa de questões
+                </p>
+                <p className="text-[10px] text-subtle-text mt-0.5">
+                  {respondidas} confirmadas · {emBranco} em branco
+                </p>
+              </div>
+              <button
+                onClick={() => setMapaAberto(false)}
+                className="p-1 rounded-lg transition-colors hover:bg-background-hub"
+              >
+                <span className="material-symbols-outlined text-subtle-text" style={{ fontSize: '18px' }}>
+                  close
+                </span>
+              </button>
+            </div>
 
-    //   {/* Botões de Ação */}
-    //   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-    //     <button
-    //       onClick={handlePausar}
-    //       disabled={salvando}
-    //       className={`px-6 py-3 rounded-lg font-medium transition-colors border ${salvando
-    //         ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-    //         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 cursor-pointer'
-    //         }`}
-    //     >
-    //       {salvando ? 'Salvando...' : '⏸️ Pausar e Sair'}
-    //     </button>
-    //     <button
-    //       onClick={handleFinalizar}
-    //       disabled={salvando}
-    //       className={`px-8 py-3 rounded-lg font-medium transition-colors ${salvando
-    //         ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-    //         : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
-    //         }`}
-    //     >
-    //       {salvando ? 'Salvando...' : '✅ Finalizar Simulado'}
-    //     </button>
-    //   </div>
-    //   {respondidas < totalQuestoes && (
-    //     <p className="text-sm text-gray-500 mt-3 text-center">
-    //       Você ainda tem {totalQuestoes - respondidas} questões não confirmadas.
-    //     </p>
-    //   )}
-    // </Layout>
+            {/* Legenda */}
+            <div className="px-5 pt-3 pb-2 flex items-center gap-4">
+              {[
+                { cor: '#059669', bg: '#F0FDF4', label: 'Certo' },
+                { cor: '#DC2626', bg: '#FFF5F5', label: 'Errado' },
+                { cor: '#D97706', bg: '#FFFBEB', label: 'Marcada' },
+                { cor: '#999',    bg: '#F5F5F5', label: 'Em branco' },
+              ].map(({ cor, label }) => (
+                <div key={label} className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cor }} />
+                  <span className="text-[9px] font-medium" style={{ color: '#999' }}>{label}</span>
+                </div>
+              ))}
+            </div>
 
-    <SimuladoLayout
-      header={slotHeader}
-      minimapa={slotMinimapa}
-      navRodape={slotNavRodape}
-    >
-      <QuestaoCard
-        numero={questaoAtualData.ordem}
-        comando={questaoAtualData.comando}
-        materia={questaoAtualData.materiaNome}
-        assunto={questaoAtualData.assuntoNome}
-        resposta={respostaAtual?.resposta ?? null}
-        confianca={respostaAtual?.confianca ?? null}
-        confirmada={respostaAtual?.confirmada ?? false}
-        onResponder={(valor) => handleResponder(questaoAtualData.questaoId, valor)}
-        onConfianca={(valor) => handleConfianca(questaoAtualData.questaoId, valor)}
-        onConfirmar={() => handleConfirmar(questaoAtualData.questaoId)}
-        podeConfirmar={podeConfirmar && !respostaAtual?.confirmada}
-      />
+            {/* Grid de questões */}
+            <div className="px-5 pb-5 pt-2 grid grid-cols-10 gap-1.5 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 280px)' }}>
+              {simulado.questoes.map((sq, index) => {
+                const item    = respostas.get(sq.questaoId);
+                const isAtual = index === questaoAtual;
 
-      {respondidas < totalQuestoes && (
-        <p className="text-xs text-subtle-text mt-4 text-center">
-          {totalQuestoes - respondidas} questões não confirmadas
-        </p>
+                let bg     = '#F5F5F5';
+                let cor    = '#999';
+                let border = '1px solid #EEEEEE';
+
+                if (isAtual) {
+                  bg = '#1A1A1A'; cor = '#fff'; border = '1px solid #1A1A1A';
+                } else if (item?.confirmada && item.resposta === true) {
+                  bg = '#F0FDF4'; cor = '#059669'; border = '1px solid #BBF7D0';
+                } else if (item?.confirmada && item.resposta === false) {
+                  bg = '#FFF5F5'; cor = '#DC2626'; border = '1px solid #FECACA';
+                } else if (item?.resposta !== null && item?.resposta !== undefined) {
+                  bg = '#FFFBEB'; cor = '#D97706'; border = '1px solid #FDE68A';
+                }
+
+                return (
+                  <button
+                    key={sq.id}
+                    onClick={() => setQuestaoAtual(index)}
+                    className="aspect-square flex items-center justify-center rounded-lg text-[10px] font-black transition-all active:scale-90"
+                    style={{ backgroundColor: bg, color: cor, border }}
+                    title={`Questão ${index + 1}`}
+                  >
+                    {index + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
-    </SimuladoLayout>
+
+      {/* ── Modal de confirmação de finalização ───────────────────────────── */}
+      {modalFinalizar && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[3px]"
+            onClick={() => setModalFinalizar(false)}
+          />
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            onClick={() => setModalFinalizar(false)}
+          >
+            <div
+              className="rounded-3xl shadow-2xl p-6 w-full max-w-sm"
+              style={{ backgroundColor: '#fff', border: '1px solid #E5E5E5' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Ícone */}
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                style={{ backgroundColor: '#F5F5F5' }}
+              >
+                <span className="material-symbols-outlined text-dark-text" style={{ fontSize: '22px' }}>
+                  flag
+                </span>
+              </div>
+
+              {/* Título */}
+              <h2 className="text-base font-black text-dark-text mb-1">
+                Finalizar simulado?
+              </h2>
+
+              {/* Descrição */}
+              <p className="text-sm text-subtle-text leading-relaxed mb-1">
+                {emBranco > 0
+                  ? `Você possui ${emBranco} questão${emBranco > 1 ? 'ões' : ''} em branco. Questões sem resposta não pontuam.`
+                  : 'Todas as questões foram respondidas. Sua pontuação será calculada pelo método CEBRASPE.'}
+              </p>
+
+              {/* Resumo rápido */}
+              <div
+                className="flex items-center gap-4 my-4 px-4 py-3 rounded-2xl"
+                style={{ backgroundColor: '#F9F9F9' }}
+              >
+                <div className="text-center">
+                  <p className="text-lg font-black text-dark-text">{respondidas}</p>
+                  <p className="text-[10px] text-subtle-text uppercase tracking-widest">confirmadas</p>
+                </div>
+                <div className="h-8 w-px" style={{ backgroundColor: '#EEEEEE' }} />
+                <div className="text-center">
+                  <p className="text-lg font-black" style={{ color: emBranco > 0 ? '#D97706' : '#059669' }}>
+                    {emBranco}
+                  </p>
+                  <p className="text-[10px] text-subtle-text uppercase tracking-widest">em branco</p>
+                </div>
+                <div className="h-8 w-px" style={{ backgroundColor: '#EEEEEE' }} />
+                <div className="text-center">
+                  <p className="text-lg font-black text-dark-text">{totalQuestoes}</p>
+                  <p className="text-[10px] text-subtle-text uppercase tracking-widest">total</p>
+                </div>
+              </div>
+
+              {/* Ações */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setModalFinalizar(false)}
+                  className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+                  style={{ backgroundColor: '#F5F5F5', color: '#666', border: '1px solid #EEEEEE' }}
+                >
+                  Continuar
+                </button>
+                <button
+                  onClick={handleFinalizarConfirmado}
+                  disabled={salvando}
+                  className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+                  style={{ backgroundColor: '#1A1A1A', color: '#fff' }}
+                >
+                  {salvando ? 'Salvando...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
