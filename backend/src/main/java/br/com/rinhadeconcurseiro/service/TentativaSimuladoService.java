@@ -114,13 +114,6 @@ public class TentativaSimuladoService {
             return;
         }
 
-        // Carregar respostas existentes diretamente do repositório evita inconsistências
-        // de coleção em cenários concorrentes.
-        Map<Long, RespostaQuestao> respostasExistentes = respostaRepository
-                .findByTentativaIdOrderBySimuladoQuestaoOrdem(tentativaId)
-                .stream()
-                .collect(Collectors.toMap(r -> r.getSimuladoQuestao().getId(), r -> r));
-
         // Deduplica por simuladoQuestaoId (última resposta vence) para evitar processamento duplicado.
         Map<Long, RespostaRequest> respostasPorQuestao = request.respostas().stream()
                 .collect(Collectors.toMap(
@@ -148,23 +141,14 @@ public class TentativaSimuladoService {
         }
 
         for (RespostaRequest req : respostasPorQuestao.values()) {
-            SimuladoQuestao sq = simuladoQuestoesPorId.get(req.simuladoQuestaoId());
-
-            RespostaQuestao resposta = respostasExistentes.get(req.simuladoQuestaoId());
-
-            if (resposta == null) {
-                resposta = new RespostaQuestao();
-                resposta.setSimuladoQuestao(sq);
-                tentativa.addResposta(resposta);
-                respostasExistentes.put(req.simuladoQuestaoId(), resposta);
-            }
-
-            resposta.setResposta(req.resposta());
-            resposta.setConfianca(req.confianca());
-            resposta.setTipoErro(req.tipoErro());
+            respostaRepository.upsertResposta(
+                    tentativaId,
+                    req.simuladoQuestaoId(),
+                    req.resposta() == null ? null : req.resposta().name(),
+                    req.confianca() == null ? null : req.confianca().name(),
+                    req.tipoErro() == null ? null : req.tipoErro().name()
+            );
         }
-
-        tentativaRepository.save(tentativa);
     }
 
     //===========

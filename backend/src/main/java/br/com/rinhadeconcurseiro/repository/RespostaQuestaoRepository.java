@@ -3,6 +3,7 @@ package br.com.rinhadeconcurseiro.repository;
 import br.com.rinhadeconcurseiro.entity.RespostaQuestao;
 import br.com.rinhadeconcurseiro.enums.Caderno;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,6 +15,39 @@ public interface RespostaQuestaoRepository extends JpaRepository<RespostaQuestao
 
     //buscar respostas de uma tentativa
     List<RespostaQuestao> findByTentativaIdOrderBySimuladoQuestaoOrdem(Long tentativaId);
+
+    @Modifying
+    @Query(value = """
+            INSERT INTO resposta_questao (
+                id_tentativa,
+                id_simulado_questao,
+                resposta,
+                confianca,
+                tipo_erro,
+                updated_at
+            )
+            VALUES (
+                :tentativaId,
+                :simuladoQuestaoId,
+                CAST(:resposta AS VARCHAR),
+                CAST(:confianca AS VARCHAR),
+                CAST(:tipoErro AS VARCHAR),
+                CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (id_tentativa, id_simulado_questao)
+            DO UPDATE SET
+                resposta = EXCLUDED.resposta,
+                confianca = EXCLUDED.confianca,
+                tipo_erro = EXCLUDED.tipo_erro,
+                updated_at = CURRENT_TIMESTAMP
+            """, nativeQuery = true)
+    void upsertResposta(
+            @Param("tentativaId") Long tentativaId,
+            @Param("simuladoQuestaoId") Long simuladoQuestaoId,
+            @Param("resposta") String resposta,
+            @Param("confianca") String confianca,
+            @Param("tipoErro") String tipoErro
+    );
 
     @Query("""
             SELECT r
