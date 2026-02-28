@@ -36,11 +36,26 @@ export default function SimuladosList() {
     
     try {
       setLoading(true);
-      const [simuladosData, emAndamentoData, finalizadosData] = await Promise.all([
+      setError(null);
+
+      const [simuladosResult, emAndamentoResult, finalizadosResult] = await Promise.allSettled([
         getSimulados(),
         getSimuladosEmAndamento(),
         getSimuladosFinalizados(),
       ]);
+
+      if (simuladosResult.status !== 'fulfilled') {
+        setError('Erro ao carregar simulados.');
+        setSimulados([]);
+        setEmAndamento(new Map());
+        setFinalizados(new Map());
+        setStats(new Map());
+        return;
+      }
+
+      const simuladosData = simuladosResult.value;
+      const emAndamentoData = emAndamentoResult.status === 'fulfilled' ? emAndamentoResult.value : [];
+      const finalizadosData = finalizadosResult.status === 'fulfilled' ? finalizadosResult.value : [];
 
       simuladosData.sort((a, b) => a.numero - b.numero);
       setSimulados(simuladosData);
@@ -59,15 +74,22 @@ export default function SimuladosList() {
 
       // Buscar stats de todos os simulados disponíveis em paralelo
       const disponiveis = simuladosData.filter(s => isDisponivel(s.dataDisponivel));
-      const statsResults = await Promise.all(
-        disponiveis.map(s =>
-          api.get<SimuladoStats>(`/api/v1/simulados/${s.id}/stats`).then(r => r.data)
+      const statsResults = await Promise.allSettled(
+        disponiveis.map((s) =>
+          api.get<SimuladoStats>(`/api/v1/simulados/${s.id}/stats`).then((r) => r.data)
         )
       );
       const mapaStats = new Map<number, SimuladoStats>();
-      statsResults.forEach(s => mapaStats.set(s.simuladoId, s));
+      statsResults.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          mapaStats.set(result.value.simuladoId, result.value);
+        }
+      });
       setStats(mapaStats);
 
+      if (emAndamentoResult.status === 'rejected' || finalizadosResult.status === 'rejected') {
+        setError('Alguns dados não puderam ser carregados. Atualize a página em instantes.');
+      }
     } catch {
       setError('Erro ao carregar simulados.');
     } finally {
