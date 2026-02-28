@@ -109,9 +109,9 @@ public class TentativaSimuladoService {
     public void salvarRespostas(Long tentativaId, Long usuarioId, SalvarRespostasRequest request) {
         TentativaSimulado tentativa = getTentativaDoUsuarioComLock(tentativaId, usuarioId);
         if (tentativa.getFinalizada()) {
-            log.warn("Conflito ao salvar respostas: tentativaId={} usuarioId={} motivo=tentativa_finalizada",
+            log.info("Salvar idempotente ignorado: tentativaId={} usuarioId={} motivo=tentativa_finalizada",
                     tentativaId, usuarioId);
-            throw new IllegalStateException("Tentativa já finalizada");
+            return;
         }
 
         // Carregar respostas existentes diretamente do repositório evita inconsistências
