@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { SimuladoDetalhado, NivelConfianca, RespostaRequest } from '../types';
 import { getSimuladoById } from '../services/simulado';
 import { iniciarSimulado, salvarRespostas, getTentativaById } from '../services/tentativa';
+import { isHttpStatus } from '../services/httpError';
 import Layout from '../components/layout/Layout';
 import QuestaoCard from '../components/ui/QuestaoCard';
 import SimuladoLayout from '../components/layout/SimuladoLayout';
@@ -182,7 +183,11 @@ export default function SimuladoPlay() {
       setSalvando(true);
       await salvarRespostas(tentativaId, { respostas: montarPayload() });
       navigate('/dashboard');
-    } catch {
+    } catch (error) {
+      if (isHttpStatus(error, 409)) {
+        navigate(`/simulados/${id}/resultado`, { state: { tentativaId } });
+        return;
+      }
       setError('Erro ao salvar. Tente novamente.');
     } finally {
       setSalvando(false);
@@ -201,7 +206,11 @@ export default function SimuladoPlay() {
         JSON.stringify({ simulado, tentativaId, respostas: payload })
       );
       navigate(`/simulados/${id}/feedback`, { state: { tentativaId } });
-    } catch {
+    } catch (error) {
+      if (isHttpStatus(error, 409)) {
+        navigate(`/simulados/${id}/resultado`, { state: { tentativaId } });
+        return;
+      }
       setError('Erro ao salvar respostas. Tente novamente.');
     } finally {
       setSalvando(false);
