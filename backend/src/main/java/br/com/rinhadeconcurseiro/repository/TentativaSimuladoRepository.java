@@ -29,7 +29,6 @@ public interface TentativaSimuladoRepository extends JpaRepository<TentativaSimu
     Optional<TentativaSimulado> findByIdAndUsuarioId(Long id, Long usuarioId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @EntityGraph(attributePaths = {"respostas", "respostas.simuladoQuestao"})
     @Query("""
             SELECT t FROM TentativaSimulado t
             WHERE t.id = :id AND t.usuario.id = :usuarioId

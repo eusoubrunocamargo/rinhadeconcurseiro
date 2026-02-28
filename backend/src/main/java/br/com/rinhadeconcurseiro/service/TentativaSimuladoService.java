@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,13 +112,23 @@ public class TentativaSimuladoService {
             throw new IllegalStateException("Tentativa já finalizada");
         }
 
-        //mapear respostas existentes para atualização
-        Map<Long, RespostaQuestao> respostasExistentes = tentativa.getRespostas() == null
-                ? Map.of()
-                : tentativa.getRespostas().stream()
+        // Carregar respostas existentes diretamente do repositório evita inconsistências
+        // de coleção em cenários concorrentes.
+        Map<Long, RespostaQuestao> respostasExistentes = respostaRepository
+                .findByTentativaIdOrderBySimuladoQuestaoOrdem(tentativaId)
+                .stream()
                 .collect(Collectors.toMap(r -> r.getSimuladoQuestao().getId(), r -> r));
 
-        for (RespostaRequest req : request.respostas()) {
+        // Deduplica por simuladoQuestaoId (última resposta vence) para evitar processamento duplicado.
+        Map<Long, RespostaRequest> respostasPorQuestao = request.respostas().stream()
+                .collect(Collectors.toMap(
+                        RespostaRequest::simuladoQuestaoId,
+                        req -> req,
+                        (oldValue, newValue) -> newValue,
+                        LinkedHashMap::new
+                ));
+
+        for (RespostaRequest req : respostasPorQuestao.values()) {
             SimuladoQuestao sq = simuladoQuestaoRepository.findById(req.simuladoQuestaoId())
                     .orElseThrow(() -> new EntityNotFoundException("Questão do simulado não encontrada: " + req.simuladoQuestaoId()));
 
@@ -125,9 +136,9 @@ public class TentativaSimuladoService {
 
             if (resposta == null) {
                 resposta = new RespostaQuestao();
-                resposta.setTentativa(tentativa);
                 resposta.setSimuladoQuestao(sq);
                 tentativa.addResposta(resposta);
+                respostasExistentes.put(req.simuladoQuestaoId(), resposta);
             }
 
             resposta.setResposta(req.resposta());

@@ -2,6 +2,7 @@ package br.com.rinhadeconcurseiro.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
+import org.hibernate.HibernateException;
 import org.hibernate.StaleStateException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,7 +83,8 @@ public class GlobalExceptionHandler {
             ObjectOptimisticLockingFailureException.class,
             OptimisticLockException.class,
             StaleStateException.class,
-            DataIntegrityViolationException.class
+            DataIntegrityViolationException.class,
+            HibernateException.class
     })
     public ResponseEntity<Map<String, Object>> handleConcurrency(Exception ex) {
         Map<String, Object> body = new HashMap<>();
@@ -95,5 +97,4 @@ public class GlobalExceptionHandler {
     }
 
 }
-
 
