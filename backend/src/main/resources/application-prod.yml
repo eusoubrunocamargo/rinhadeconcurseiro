@@ -43,4 +43,8 @@ logging:
   level:
     root: WARN
     br.com.rinhadeconcurseiro: INFO
+    org.springframework.security: WARN
+    org.springframework.security.oauth2: WARN
+    org.springframework.web: WARN
+    org.hibernate: WARN
     org.flywaydb: INFO
