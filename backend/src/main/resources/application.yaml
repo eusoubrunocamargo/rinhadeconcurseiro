@@ -13,10 +13,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        format_sql: true
+        format_sql: ${JPA_FORMAT_SQL:false}
 
   #Flyway
   flyway:
@@ -39,12 +39,15 @@ spring:
 # Logging
 logging:
   level:
-    org.springframework.security: TRACE
-    org.springframework.security.oauth2: TRACE
-    org.springframework.web.client: DEBUG
-    br.com.rinhadeconcurseiro: DEBUG
-    org.flywaydb: DEBUG
-    org.springframework.boot.autoconfigure.flyway: DEBUG
+    root: ${ROOT_LOG_LEVEL:INFO}
+    org.springframework.security: ${SPRING_SECURITY_LOG_LEVEL:WARN}
+    org.springframework.security.oauth2: ${SPRING_SECURITY_OAUTH2_LOG_LEVEL:WARN}
+    org.springframework.web.client: ${SPRING_WEB_CLIENT_LOG_LEVEL:WARN}
+    org.hibernate.SQL: ${HIBERNATE_SQL_LOG_LEVEL:WARN}
+    org.hibernate.type.descriptor.sql: ${HIBERNATE_BINDER_LOG_LEVEL:WARN}
+    br.com.rinhadeconcurseiro: ${APP_LOG_LEVEL:INFO}
+    org.flywaydb: ${FLYWAY_LOG_LEVEL:INFO}
+    org.springframework.boot.autoconfigure.flyway: ${FLYWAY_AUTOCONFIG_LOG_LEVEL:INFO}
 
 # Servidor
 server:
@@ -55,4 +58,4 @@ app:
   frontend:
     url: http://localhost:5173
 
-debug: true
+debug: ${APP_DEBUG:false}
