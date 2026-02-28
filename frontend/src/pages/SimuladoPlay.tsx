@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { SimuladoDetalhado, NivelConfianca, RespostaRequest } from '../types';
 import { getSimuladoById } from '../services/simulado';
@@ -30,38 +30,10 @@ export default function SimuladoPlay() {
   const [modalFinalizar, setModalFinalizar] = useState(false);
   const [mapaAberto,     setMapaAberto]     = useState(false);
 
-  useEffect(() => {
-    if (id) loadSimulado(parseInt(id));
-  }, [id]);
-
-  // Fecha mapa ao trocar questão
-  useEffect(() => {
-    setMapaAberto(false);
-  }, [questaoAtual]);
-
-  // ── Carregamento ──────────────────────────────────────────────────────────
-
-  async function loadSimulado(simuladoId: number) {
-    try {
-      setLoading(true);
-      const data = await getSimuladoById(simuladoId);
-      setSimulado(data);
-
-      if (tentativaIdFromState && !refazerFromState) {
-        setTentativaId(tentativaIdFromState);
-        await carregarRespostasExistentes(tentativaIdFromState, data);
-      } else {
-        const tentativa = await iniciarSimulado(simuladoId, refazerFromState ?? false);
-        setTentativaId(tentativa.tentativaId);
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar simulado.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function carregarRespostasExistentes(tentId: number, simuladoData: SimuladoDetalhado) {
+  // useEffect(() => {
+  //   if (id) loadSimulado(parseInt(id));
+  // }, [id]);
+  const carregarRespostasExistentes = useCallback(async (tentId: number, simuladoData: SimuladoDetalhado) => {
     try {
       const tentativa = await getTentativaById(tentId);
       const mapa = new Map<number, RespostaLocal>();
@@ -84,7 +56,71 @@ export default function SimuladoPlay() {
     } catch (err) {
       console.error('Erro ao carregar respostas existentes:', err);
     }
-  }
+  }, []);
+
+  // const loadSimulado = useCallback(async (simuladoId: number) => {
+  //   try {
+  //     setLoading(true);
+  //     const data = await getSimuladoById(simuladoId);
+  //     setSimulado(data);
+
+
+  // Fecha mapa ao trocar questão
+  useEffect(() => {
+    setMapaAberto(false);
+  }, [questaoAtual]);
+
+  // ── Carregamento ──────────────────────────────────────────────────────────
+
+  const loadSimulado = useCallback(async (simuladoId: number) => {
+    try {
+      setLoading(true);
+      const data = await getSimuladoById(simuladoId);
+      setSimulado(data);
+
+      if (tentativaIdFromState && !refazerFromState) {
+        setTentativaId(tentativaIdFromState);
+        await carregarRespostasExistentes(tentativaIdFromState, data);
+      } else {
+        const tentativa = await iniciarSimulado(simuladoId, refazerFromState ?? false);
+        setTentativaId(tentativa.tentativaId);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar simulado.');
+    } finally {
+      setLoading(false);
+    }
+  }, [tentativaIdFromState, refazerFromState, carregarRespostasExistentes]);
+  
+   useEffect(() => {
+    if (id) loadSimulado(parseInt(id));
+  }, [id, loadSimulado]);
+
+
+  // async function carregarRespostasExistentes(tentId: number, simuladoData: SimuladoDetalhado) {
+  //   try {
+  //     const tentativa = await getTentativaById(tentId);
+  //     const mapa = new Map<number, RespostaLocal>();
+
+  //     tentativa.respostas.forEach((r) => {
+  //       const sq = simuladoData.questoes.find((q) => q.id === r.simuladoQuestaoId);
+  //       if (sq && r.resposta) {
+  //         mapa.set(sq.questaoId, {
+  //           resposta:  r.resposta === 'CERTO' ? true : r.resposta === 'ERRADO' ? false : null,
+  //           confianca: r.confianca,
+  //           confirmada: true,
+  //         });
+  //       }
+  //     });
+
+  //     setRespostas(mapa);
+
+  //     const primeiraVazia = simuladoData.questoes.findIndex((sq) => !mapa.has(sq.questaoId));
+  //     if (primeiraVazia !== -1) setQuestaoAtual(primeiraVazia);
+  //   } catch (err) {
+  //     console.error('Erro ao carregar respostas existentes:', err);
+  //   }
+  // }
 
   // ── Handlers de resposta ──────────────────────────────────────────────────
 

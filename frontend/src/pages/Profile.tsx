@@ -18,8 +18,11 @@ export default function Profile() {
       await updateApelido(apelido);
       await refreshUser();
       setMessage({ type: 'success', text: 'Apelido atualizado com sucesso!' });
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Erro ao atualizar apelido.' });
+    } catch (error: unknown) {
+      const errorMessage = 
+        (error as { response?: { data?: { message?: string } } }).response?.data?.message ??
+        'Erro ao atualizar apelido.';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
     }

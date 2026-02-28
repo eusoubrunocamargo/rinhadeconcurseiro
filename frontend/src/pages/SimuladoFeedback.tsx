@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { SimuladoDetalhado, RespostaRequest, TipoErro } from '../types';
 import { salvarRespostas, finalizarTentativa } from '../services/tentativa';
@@ -42,6 +42,21 @@ export default function SimuladoFeedback() {
   const [finalizando,     setFinalizando]     = useState(false);
   const [error,           setError]           = useState<string | null>(null);
 
+  
+
+  // async function finalizarDireto(dadosParam: DadosPendentes) {
+  const finalizarDireto = useCallback(async (dadosParam: DadosPendentes) => {
+    try {
+      setFinalizando(true);
+      await finalizarTentativa(dadosParam.tentativaId);
+      sessionStorage.removeItem(`pendente_${dadosParam.tentativaId}`);
+      navigate(`/simulados/${id}/resultado`, { state: { tentativaId: dadosParam.tentativaId } });
+    } catch {
+      setError('Erro ao finalizar. Tente novamente.');
+      setFinalizando(false);
+    }
+  }, [navigate, id]);
+
   useEffect(() => {
     if (!tentativaIdFromState) { navigate('/simulados'); return; }
 
@@ -73,19 +88,7 @@ export default function SimuladoFeedback() {
 
     setQuestoesErradas(erradas);
     if (erradas.length === 0) finalizarDireto(parsed);
-  }, [tentativaIdFromState, navigate]);
-
-  async function finalizarDireto(dadosParam: DadosPendentes) {
-    try {
-      setFinalizando(true);
-      await finalizarTentativa(dadosParam.tentativaId);
-      sessionStorage.removeItem(`pendente_${dadosParam.tentativaId}`);
-      navigate(`/simulados/${id}/resultado`, { state: { tentativaId: dadosParam.tentativaId } });
-    } catch {
-      setError('Erro ao finalizar. Tente novamente.');
-      setFinalizando(false);
-    }
-  }
+  }, [tentativaIdFromState, navigate, finalizarDireto]);
 
   function handleFeedback(simuladoQuestaoId: number, tipo: TipoErro) {
     setFeedbacks((prev) => { const n = new Map(prev); n.set(simuladoQuestaoId, tipo); return n; });
