@@ -15,6 +15,18 @@ public interface RespostaQuestaoRepository extends JpaRepository<RespostaQuestao
     //buscar respostas de uma tentativa
     List<RespostaQuestao> findByTentativaIdOrderBySimuladoQuestaoOrdem(Long tentativaId);
 
+    @Query("""
+            SELECT r
+            FROM RespostaQuestao r
+            JOIN FETCH r.simuladoQuestao sq
+            JOIN FETCH sq.questao q
+            JOIN FETCH q.materia
+            LEFT JOIN FETCH q.assunto
+            WHERE r.tentativa.id = :tentativaId
+            ORDER BY sq.ordem
+            """)
+    List<RespostaQuestao> findDetalhadasByTentativaId(@Param("tentativaId") Long tentativaId);
+
     // Buscar última resposta de cada questão por caderno (sem duplicatas)
     @Query("""
             SELECT r FROM RespostaQuestao r

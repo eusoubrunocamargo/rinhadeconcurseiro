@@ -47,4 +47,6 @@ logging:
     org.springframework.security.oauth2: WARN
     org.springframework.web: WARN
     org.hibernate: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql: OFF
     org.flywaydb: INFO

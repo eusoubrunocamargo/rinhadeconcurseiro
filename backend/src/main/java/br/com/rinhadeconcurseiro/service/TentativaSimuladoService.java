@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,9 +130,25 @@ public class TentativaSimuladoService {
                         LinkedHashMap::new
                 ));
 
+        Map<Long, SimuladoQuestao> simuladoQuestoesPorId = simuladoQuestaoRepository
+                .findAllById(respostasPorQuestao.keySet())
+                .stream()
+                .collect(Collectors.toMap(SimuladoQuestao::getId, sq -> sq, (oldValue, newValue) -> oldValue, HashMap::new));
+
+        List<Long> idsInvalidos = new ArrayList<>();
+        for (Long simuladoQuestaoId : respostasPorQuestao.keySet()) {
+            SimuladoQuestao sq = simuladoQuestoesPorId.get(simuladoQuestaoId);
+            if (sq == null || sq.getSimulado() == null || !sq.getSimulado().getId().equals(tentativa.getSimulado().getId())) {
+                idsInvalidos.add(simuladoQuestaoId);
+            }
+        }
+
+        if (!idsInvalidos.isEmpty()) {
+            throw new EntityNotFoundException("Questão do simulado não encontrada: " + idsInvalidos.get(0));
+        }
+
         for (RespostaRequest req : respostasPorQuestao.values()) {
-            SimuladoQuestao sq = simuladoQuestaoRepository.findById(req.simuladoQuestaoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Questão do simulado não encontrada: " + req.simuladoQuestaoId()));
+            SimuladoQuestao sq = simuladoQuestoesPorId.get(req.simuladoQuestaoId());
 
             RespostaQuestao resposta = respostasExistentes.get(req.simuladoQuestaoId());
 
@@ -156,10 +174,11 @@ public class TentativaSimuladoService {
     @Transactional
     public TentativaDetalheResponse finalizar(Long tentativaId, Long usuarioId) {
         TentativaSimulado tentativa = getTentativaDoUsuarioComLock(tentativaId, usuarioId);
+        List<RespostaQuestao> respostas = respostaRepository.findDetalhadasByTentativaId(tentativaId);
         if (tentativa.getFinalizada()) {
             log.info("Finalização idempotente: tentativaId={} usuarioId={} motivo=ja_finalizada",
                     tentativaId, usuarioId);
-            return toDetalheResponse(tentativa);
+            return toDetalheResponse(tentativa, respostas);
         }
 
         //classificar cada resposta
@@ -167,7 +186,7 @@ public class TentativaSimuladoService {
         int erros = 0;
         int emBranco = 0;
 
-        for (RespostaQuestao resposta : tentativa.getRespostas()) {
+        for (RespostaQuestao resposta : respostas) {
             classificarResposta(resposta);
 
             if (resposta.getResposta() == null || resposta.getResposta() == RespostaTipo.BRANCO) {
@@ -191,7 +210,7 @@ public class TentativaSimuladoService {
         log.info("Tentativa finalizada com sucesso: tentativaId={} usuarioId={} acertos={} erros={} emBranco={}",
                 tentativaId, usuarioId, acertos, erros, emBranco);
 
-        return toDetalheResponse(tentativa);
+        return toDetalheResponse(tentativa, respostas);
     }
 
     //===========
@@ -217,7 +236,8 @@ public class TentativaSimuladoService {
     @Transactional(readOnly = true)
     public TentativaDetalheResponse buscarPorId(Long tentativaId, Long usuarioId) {
         TentativaSimulado tentativa = getTentativaDoUsuario(tentativaId, usuarioId);
-        return toDetalheResponse(tentativa);
+        List<RespostaQuestao> respostas = respostaRepository.findDetalhadasByTentativaId(tentativaId);
+        return toDetalheResponse(tentativa, respostas);
     }
 
     @Transactional(readOnly = true)
@@ -477,11 +497,15 @@ public class TentativaSimuladoService {
     }
 
     private TentativaDetalheResponse toDetalheResponse(TentativaSimulado t) {
+        return toDetalheResponse(t, respostaRepository.findDetalhadasByTentativaId(t.getId()));
+    }
+
+    private TentativaDetalheResponse toDetalheResponse(TentativaSimulado t, List<RespostaQuestao> respostasEntidade) {
         Simulado s = t.getSimulado();
 
-        List<RespostaDetalheResponse> respostas = t.getRespostas() == null
+        List<RespostaDetalheResponse> respostas = respostasEntidade == null
                 ? List.of()
-                : t.getRespostas().stream().map(this::toRespostaDetalheResponse).toList();
+                : respostasEntidade.stream().map(this::toRespostaDetalheResponse).toList();
 
         long vermelho = respostas.stream().filter(r -> r.caderno() == Caderno.VERMELHO).count();
         long amarelo = respostas.stream().filter(r -> r.caderno() == Caderno.AMARELO).count();
