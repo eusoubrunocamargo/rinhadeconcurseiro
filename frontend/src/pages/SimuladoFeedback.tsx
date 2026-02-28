@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { SimuladoDetalhado, RespostaRequest, TipoErro } from '../types';
 import { salvarRespostas, finalizarTentativa } from '../services/tentativa';
+import { isHttpStatus } from '../services/httpError';
 import Layout from '../components/layout/Layout';
 import DOMPurify from 'dompurify';
 
@@ -51,7 +52,12 @@ export default function SimuladoFeedback() {
       await finalizarTentativa(dadosParam.tentativaId);
       sessionStorage.removeItem(`pendente_${dadosParam.tentativaId}`);
       navigate(`/simulados/${id}/resultado`, { state: { tentativaId: dadosParam.tentativaId } });
-    } catch {
+    } catch (error) {
+      if (isHttpStatus(error, 409)) {
+        sessionStorage.removeItem(`pendente_${dadosParam.tentativaId}`);
+        navigate(`/simulados/${id}/resultado`, { state: { tentativaId: dadosParam.tentativaId } });
+        return;
+      }
       setError('Erro ao finalizar. Tente novamente.');
       setFinalizando(false);
     }
@@ -107,7 +113,12 @@ export default function SimuladoFeedback() {
       await finalizarTentativa(dados.tentativaId);
       sessionStorage.removeItem(`pendente_${dados.tentativaId}`);
       navigate(`/simulados/${id}/resultado`, { state: { tentativaId: dados.tentativaId } });
-    } catch {
+    } catch (error) {
+      if (isHttpStatus(error, 409)) {
+        sessionStorage.removeItem(`pendente_${dados.tentativaId}`);
+        navigate(`/simulados/${id}/resultado`, { state: { tentativaId: dados.tentativaId } });
+        return;
+      }
       setError('Erro ao finalizar. Tente novamente.');
     } finally {
       setFinalizando(false);
