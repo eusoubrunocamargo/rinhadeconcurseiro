@@ -127,8 +127,8 @@ export default function Dashboard() {
                   </div>
                   <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#F0F0F0' }}>
                     <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${Math.max(xpPct, 2)}%`, backgroundColor: '#FF4D4D'}}
+                      className="h-full bg-dark-text rounded-full transition-all duration-700"
+                      style={{ width: `${Math.max(xpPct, 2)}%` }}
                     />
                   </div>
                   <span className="text-[10px]" style={{ color: '#BBBBBB' }}>{50 - xpAtual} questões para o próx. nível</span>
@@ -170,8 +170,8 @@ export default function Dashboard() {
             </div>
           ) : progresso ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <MetricCard value={progresso.simuladosFinalizados} label="Simulados finalizados" icon="check_circle" destaque />
-              <MetricCard value={progresso.simuladosEmAndamento} label="em andamento" icon="pending" />
+              <MetricCard value={progresso.simuladosFinalizados} label="Finalizados" icon="check_circle" destaque />
+              <MetricCard value={progresso.simuladosEmAndamento} label="Em andamento" icon="pending" />
               <MetricCard value={`${aproveitamento.toFixed(1)}%`} label="Aproveitamento" icon="trending_up" />
               <MetricCard value={totalQuestoes} label="Questões" icon="bolt" />
             </div>
@@ -250,7 +250,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-dark-text truncate">{t.simuladoTitulo}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <div className="flex-1 h-2 rounded-full overflow-hidden max-w-40" style={{ backgroundColor: '#EEEEEE' }}>
+                          <div className="flex-1 h-2 rounded-full overflow-hidden max-w-[160px]" style={{ backgroundColor: '#EEEEEE' }}>
                             <div
                               className="h-full rounded-full transition-all"
                               style={{ width: `${Math.max(pct, 1)}%`, backgroundColor: '#FF4D4D' }}
@@ -327,40 +327,37 @@ export default function Dashboard() {
 // ── Sub-componentes ────────────────────────────────────────────────
 
 function MetricCard({
-  value, label, icon,
+  value, label, icon, destaque,
 }: {
   value: string | number;
   label: string;
   icon: string;
   destaque?: boolean;
 }) {
-  const [hovered, setHovered] = useState(false);
   return (
     <div
       className="rounded-[28px] p-5 flex flex-col justify-between h-32 hover:-translate-y-1 transition-transform duration-300 cursor-default"
-      style={{ backgroundColor: '#ffffff', border: '1px solid #E5E5E5' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      style={{
+        backgroundColor: destaque ? '#1A1A1A' : '#ffffff',
+        border: '1px solid #E5E5E5',
+      }}
     >
       <div
-        className="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200"
+        className="w-9 h-9 rounded-full flex items-center justify-center"
         style={{
-          backgroundColor: hovered ? '#1A1A1A' : '#F5F5F5',
-          border: '1px solid #E5E5E5',
+          backgroundColor: destaque ? 'rgba(255,255,255,0.1)' : '#F5F5F5',
+          border: destaque ? 'none' : '1px solid #E5E5E5',
         }}
       >
-        <span
-          className="material-symbols-outlined transition-colors duration-200"
-          style={{ fontSize: '16px', color: hovered ? '#FF4D4D' : '#999999' }}
-        >
+        <span className="material-symbols-outlined" style={{ fontSize: '16px', color: destaque ? '#FF4D4D' : '#999999' }}>
           {icon}
         </span>
       </div>
       <div>
-        <p className="text-2xl font-black leading-none" style={{ color: '#1A1A1A' }}>
+        <p className="text-2xl font-black leading-none" style={{ color: destaque ? '#ffffff' : '#1A1A1A' }}>
           {value}
         </p>
-        <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: '#999999' }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: destaque ? 'rgba(255,255,255,0.4)' : '#999999' }}>
           {label}
         </p>
       </div>
