@@ -188,7 +188,9 @@ public class TentativaSimuladoService {
         tentativa.setFinalizada(true);
         tentativa.setDataFim(LocalDateTime.now());
 
-        tentativaRepository.save(tentativa);
+        // Evita merge/cascade desnecessário em entidade já gerenciada (pode gerar
+        // INSERT duplicado em resposta_questao em cenários concorrentes).
+        tentativaRepository.flush();
         log.info("Tentativa finalizada com sucesso: tentativaId={} usuarioId={} acertos={} erros={} emBranco={}",
                 tentativaId, usuarioId, acertos, erros, emBranco);
 
