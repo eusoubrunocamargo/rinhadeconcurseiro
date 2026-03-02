@@ -315,7 +315,7 @@ export default function SimuladoPlay() {
               onClick={() => setModalFinalizar(true)}
               disabled={salvando}
               className="h-full w-full flex items-center justify-center gap-1.5 px-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
-              style={{ backgroundColor: '#1A1A1A', color: '#fff' }}
+              style={{ backgroundColor: '#FF4D4D', color: '#fff' }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>check_circle</span>
               {salvando ? 'Salvando...' : 'Finalizar'}
@@ -505,7 +505,7 @@ export default function SimuladoPlay() {
               {/* Descrição */}
               <p className="text-sm text-subtle-text leading-relaxed mb-1">
                 {emBranco > 0
-                  ? `Você possui ${emBranco} questão${emBranco > 1 ? 'ões' : ''} em branco. Questões sem resposta não pontuam.`
+                  ? `Você possui ${emBranco} quest${emBranco > 1 ? 'ões' : 'ão'} em branco. Questões sem resposta não pontuam.`
                   : 'Todas as questões foram respondidas. Sua pontuação será calculada pelo método CEBRASPE.'}
               </p>
 
@@ -539,15 +539,15 @@ export default function SimuladoPlay() {
                   className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
                   style={{ backgroundColor: '#F5F5F5', color: '#666', border: '1px solid #EEEEEE' }}
                 >
-                  Continuar
+                  Voltar
                 </button>
                 <button
                   onClick={handleFinalizarConfirmado}
                   disabled={salvando}
                   className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
-                  style={{ backgroundColor: '#1A1A1A', color: '#fff' }}
+                  style={{ backgroundColor: '#FF4D4D', color: '#fff' }}
                 >
-                  {salvando ? 'Salvando...' : 'Confirmar'}
+                  {salvando ? 'Salvando...' : 'Finalizar'}
                 </button>
               </div>
             </div>
