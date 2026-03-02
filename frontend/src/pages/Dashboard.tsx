@@ -191,7 +191,6 @@ export default function Dashboard() {
                 bgCor="#fff0f2"
                 icon="cancel"
                 count={progresso.cadernos.totalVermelho}
-                // TODO: substituir por progresso.topAssuntos.VERMELHO quando o backend expor
                 assuntos={(progresso.topAssuntos?.['VERMELHO'] ?? []).slice(0, 5).map(a => a.assuntoNome)}
               />
               <CadernoCard
@@ -376,7 +375,7 @@ function CadernoCard({
   bgCor: string;
   icon: string;
   count: number;
-  assuntos: string[]; // TODO: virá de progresso.topAssuntos após extensão do backend
+  assuntos: string[];
 }) {
   return (
     <Link
@@ -399,7 +398,7 @@ function CadernoCard({
         <p className="text-sm font-black text-dark-text">{label}</p>
         <p className="text-[11px] mt-0.5 mb-2.5" style={{ color: '#999' }}>{descricao}</p>
 
-        {/* Tags de assunto — mockadas até o backend expor topAssuntos */}
+        {/* Tags de assunto */}
         <div className="flex flex-wrap gap-1.5">
           {assuntos.map(tag => (
             <span
@@ -410,12 +409,6 @@ function CadernoCard({
               {tag}
             </span>
           ))}
-          <span
-            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: '#F5F5F5', color: '#999' }}
-          >
-            mock
-          </span>
         </div>
       </div>
 

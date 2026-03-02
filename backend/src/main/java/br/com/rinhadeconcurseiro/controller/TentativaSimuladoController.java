@@ -1,5 +1,7 @@
 package br.com.rinhadeconcurseiro.controller;
 
+import br.com.rinhadeconcurseiro.dto.request.FinalizarRequest;
+import br.com.rinhadeconcurseiro.dto.request.RespostaRequest;
 import br.com.rinhadeconcurseiro.dto.request.SalvarRespostasRequest;
 import br.com.rinhadeconcurseiro.dto.response.*;
 import br.com.rinhadeconcurseiro.entity.Usuario;
@@ -69,9 +71,12 @@ public class TentativaSimuladoController {
     @PutMapping("/usuarios/me/simulados/{tentativaId}/finalizar")
     public ResponseEntity<@NonNull TentativaDetalheResponse> finalizar(
             @PathVariable Long tentativaId,
+            @RequestBody(required = false) @Valid FinalizarRequest request,
             @AuthenticationPrincipal Usuario usuario) {
 
-        return ResponseEntity.ok(tentativaService.finalizar(tentativaId, usuario.getId()));
+        List<RespostaRequest> respostas = request != null ? request.respostas() : null;
+
+        return ResponseEntity.ok(tentativaService.finalizar(tentativaId, usuario.getId(), respostas));
     }
 
     //==== Progresso e Cadernos ====//
