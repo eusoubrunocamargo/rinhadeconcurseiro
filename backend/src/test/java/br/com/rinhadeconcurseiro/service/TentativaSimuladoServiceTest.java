@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +43,9 @@ class TentativaSimuladoServiceTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private JdbcTemplate jdbcTemplate;
 
     @InjectMocks
     private TentativaSimuladoService service;
@@ -213,10 +220,10 @@ class TentativaSimuladoServiceTest {
     @DisplayName("Salvar Respostas")
     class SalvarRespostas {
 
-        @SuppressWarnings("null")
+        @SuppressWarnings({"null", "unchecked"})
         @Test
-        @DisplayName("Deve salvar respostas com sucesso")
-        void deveSalvarRespostasComSucesso() {
+        @DisplayName("Deve persistir respostas via batch JDBC com sucesso")
+        void deveSalvarRespostasEmBatchComSucesso() {
             // Arrange
             TentativaSimulado tentativa = TentativaSimulado.builder()
                     .id(1L)
@@ -227,30 +234,31 @@ class TentativaSimuladoServiceTest {
                     .build();
 
             SalvarRespostasRequest request = new SalvarRespostasRequest(List.of(
-                    new RespostaRequest(1L, RespostaTipo.CERTO, NivelConfianca.CERTEZA, null)
+                    new RespostaRequest(1L, RespostaTipo.CERTO, NivelConfianca.CERTEZA, null),
+                    new RespostaRequest(2L, RespostaTipo.ERRADO, NivelConfianca.DUVIDA, TipoErro.CONTEUDO)
             ));
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            SimuladoQuestao sq2 = SimuladoQuestao.builder()
+                    .id(2L).simulado(simulado).ordem(2).caderno(CadernoTipo.BASICO).build();
+
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(simuladoQuestaoRepository.findById(1L))
-                    .thenReturn(Optional.of(simuladoQuestao));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            when(simuladoQuestaoRepository.findAllById(any()))
+                    .thenReturn(List.of(simuladoQuestao, sq2));
 
             // Act
             service.salvarRespostas(1L, 1L, request);
 
-            // Assert
-            assertThat(tentativa.getRespostas()).hasSize(1);
-            assertThat(tentativa.getRespostas().get(0).getResposta()).isEqualTo(RespostaTipo.CERTO);
-            assertThat(tentativa.getRespostas().get(0).getConfianca()).isEqualTo(NivelConfianca.CERTEZA);
-
-            verify(tentativaRepository).save(tentativa);
+            // Assert: deve ter disparado um batchUpdate, nunca o save do JPA
+            verify(jdbcTemplate).batchUpdate(anyString(), any(List.class), anyInt(),
+                    any(ParameterizedPreparedStatementSetter.class));
+            verify(tentativaRepository, never()).save(any());
         }
 
-        @SuppressWarnings("null")
+        @SuppressWarnings({"null", "unchecked"})
         @Test
-        @DisplayName("Deve lançar exceção se tentativa já finalizada")
-        void deveLancarExcecaoSeTentativaJaFinalizada() {
+        @DisplayName("Deve ignorar silenciosamente se tentativa já finalizada (idempotente)")
+        void deveIgnorarSeTentativaJaFinalizada() {
             // Arrange
             TentativaSimulado tentativa = TentativaSimulado.builder()
                     .id(1L)
@@ -263,14 +271,16 @@ class TentativaSimuladoServiceTest {
                     new RespostaRequest(1L, RespostaTipo.CERTO, NivelConfianca.CERTEZA, null)
             ));
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
 
-            // Act & Assert
-            assertThatThrownBy(() -> service.salvarRespostas(1L, 1L, request))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Tentativa já finalizada");
+            // Act — não deve lançar exceção
+            assertThatCode(() -> service.salvarRespostas(1L, 1L, request))
+                    .doesNotThrowAnyException();
 
+            // Assert: nenhuma escrita no banco deve acontecer
+            verify(jdbcTemplate, never()).batchUpdate(anyString(), any(List.class), anyInt(),
+                    any(ParameterizedPreparedStatementSetter.class));
             verify(tentativaRepository, never()).save(any());
         }
     }
@@ -320,6 +330,12 @@ class TentativaSimuladoServiceTest {
 
             rq.setTentativa(tentativa);
 
+            // O finalizar() busca respostas via repository, não via tentativa.getRespostas().
+            // Sem esse stub, findDetalhadasByTentativaId retorna lista vazia e todos os
+            // contadores ficam zerados.
+            when(respostaRepository.findDetalhadasByTentativaId(1L))
+                    .thenReturn(tentativa.getRespostas());
+
             return tentativa;
         }
 
@@ -331,7 +347,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.CERTO, NivelConfianca.CERTEZA, null, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -355,7 +371,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.CERTO, NivelConfianca.DUVIDA, null, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -378,7 +394,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.CERTO, NivelConfianca.CHUTE, null, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -399,7 +415,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.ERRADO, NivelConfianca.CERTEZA, TipoErro.CONTEUDO, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -423,7 +439,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.ERRADO, NivelConfianca.DUVIDA, TipoErro.INTERPRETACAO, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -444,7 +460,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.ERRADO, NivelConfianca.CERTEZA, TipoErro.INTERPRETACAO, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -465,7 +481,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     RespostaTipo.ERRADO, NivelConfianca.CERTEZA, TipoErro.DISTRACAO, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -488,7 +504,7 @@ class TentativaSimuladoServiceTest {
             TentativaSimulado tentativa = criarTentativaComResposta(
                     null, null, null, RespostaTipo.CERTO);
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
             when(tentativaRepository.save(any())).thenReturn(tentativa);
 
@@ -516,7 +532,7 @@ class TentativaSimuladoServiceTest {
             tentativa.setPontuacao(1);
             tentativa.setDataFim(LocalDateTime.now());
 
-            when(tentativaRepository.findByIdAndUsuarioId(1L, 1L))
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
 
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -525,6 +541,105 @@ class TentativaSimuladoServiceTest {
             assertThat(response.acertos()).isEqualTo(1);
             assertThat(response.erros()).isEqualTo(0);
             verify(tentativaRepository, never()).save(any());
+        }
+    }
+
+    // ========================================
+    // TESTES: FINALIZAR COM RESPOSTAS FINAIS
+    // ========================================
+    @Nested
+    @DisplayName("Finalizar com Respostas Finais")
+    class FinalizarComRespostasFinais {
+
+        @SuppressWarnings({"null", "unchecked"})
+        @Test
+        @DisplayName("Deve salvar respostas finais e finalizar atomicamente")
+        void deveSalvarEFinalizarAtomicamente() {
+            // Arrange
+            TentativaSimulado tentativa = TentativaSimulado.builder()
+                    .id(1L).usuario(usuario).simulado(simulado)
+                    .finalizada(false).respostas(new ArrayList<>()).build();
+
+            List<RespostaRequest> respostasFinais = List.of(
+                    new RespostaRequest(1L, RespostaTipo.CERTO, NivelConfianca.CERTEZA, null)
+            );
+
+            RespostaQuestao rq = RespostaQuestao.builder()
+                    .id(1L).simuladoQuestao(simuladoQuestao)
+                    .resposta(RespostaTipo.CERTO).confianca(NivelConfianca.CERTEZA).build();
+
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
+                    .thenReturn(Optional.of(tentativa));
+            when(simuladoQuestaoRepository.findAllById(any()))
+                    .thenReturn(List.of(simuladoQuestao));
+            when(respostaRepository.findDetalhadasByTentativaId(1L))
+                    .thenReturn(List.of(rq));
+            when(tentativaRepository.save(any())).thenReturn(tentativa);
+
+            // Act
+            TentativaDetalheResponse response = service.finalizar(1L, 1L, respostasFinais);
+
+            // Assert: batch executado antes da finalização
+            verify(jdbcTemplate).batchUpdate(anyString(), any(List.class), anyInt(),
+                    any(ParameterizedPreparedStatementSetter.class));
+            // Assert: tentativa finalizada com a resposta classificada
+            assertThat(response.finalizada()).isTrue();
+            assertThat(tentativa.getFinalizada()).isTrue();
+            verify(tentativaRepository).save(tentativa);
+        }
+
+        @SuppressWarnings({"null", "unchecked"})
+        @Test
+        @DisplayName("Deve finalizar sem erros quando respostasFinais é nulo (sem body)")
+        void deveFinalizarSemBodyComSucesso() {
+            // Arrange
+            TentativaSimulado tentativa = TentativaSimulado.builder()
+                    .id(1L).usuario(usuario).simulado(simulado)
+                    .finalizada(false).respostas(new ArrayList<>()).build();
+
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
+                    .thenReturn(Optional.of(tentativa));
+            when(respostaRepository.findDetalhadasByTentativaId(1L))
+                    .thenReturn(List.of());
+            when(tentativaRepository.save(any())).thenReturn(tentativa);
+
+            // Act — sem respostas finais (comportamento legado)
+            TentativaDetalheResponse response = service.finalizar(1L, 1L, null);
+
+            // Assert: nenhum batch executado, apenas finalização
+            verify(jdbcTemplate, never()).batchUpdate(anyString(), any(List.class), anyInt(),
+                    any(ParameterizedPreparedStatementSetter.class));
+            assertThat(response.finalizada()).isTrue();
+        }
+
+        @SuppressWarnings({"null", "unchecked"})
+        @Test
+        @DisplayName("Deve ser idempotente mesmo com respostas no body quando já finalizada")
+        void deveSerIdempotenteComRespostasNoBody() {
+            // Arrange
+            TentativaSimulado tentativa = TentativaSimulado.builder()
+                    .id(1L).usuario(usuario).simulado(simulado)
+                    .finalizada(true).acertos(1).erros(0).emBranco(0).pontuacao(1)
+                    .dataFim(LocalDateTime.now()).respostas(new ArrayList<>()).build();
+
+            List<RespostaRequest> respostasFinais = List.of(
+                    new RespostaRequest(1L, RespostaTipo.CERTO, NivelConfianca.CERTEZA, null)
+            );
+
+            when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
+                    .thenReturn(Optional.of(tentativa));
+            when(respostaRepository.findDetalhadasByTentativaId(1L))
+                    .thenReturn(List.of());
+
+            // Act
+            TentativaDetalheResponse response = service.finalizar(1L, 1L, respostasFinais);
+
+            // Assert: idempotente — sem batch, sem save
+            verify(jdbcTemplate, never()).batchUpdate(anyString(), any(List.class), anyInt(),
+                    any(ParameterizedPreparedStatementSetter.class));
+            verify(tentativaRepository, never()).save(any());
+            assertThat(response.finalizada()).isTrue();
+            assertThat(response.acertos()).isEqualTo(1);
         }
     }
 

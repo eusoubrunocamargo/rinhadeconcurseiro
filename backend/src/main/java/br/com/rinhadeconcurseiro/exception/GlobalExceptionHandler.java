@@ -6,7 +6,9 @@ import org.hibernate.HibernateException;
 import org.hibernate.StaleStateException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -84,6 +86,8 @@ public class GlobalExceptionHandler {
             OptimisticLockException.class,
             StaleStateException.class,
             DataIntegrityViolationException.class,
+            PessimisticLockingFailureException.class,
+            CannotAcquireLockException.class,
             HibernateException.class
     })
     public ResponseEntity<Map<String, Object>> handleConcurrency(Exception ex) {

@@ -16,7 +16,7 @@ public interface RespostaQuestaoRepository extends JpaRepository<RespostaQuestao
     //buscar respostas de uma tentativa
     List<RespostaQuestao> findByTentativaIdOrderBySimuladoQuestaoOrdem(Long tentativaId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
             INSERT INTO resposta_questao (
                 id_tentativa,

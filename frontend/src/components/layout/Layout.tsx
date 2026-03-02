@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 interface LayoutProps {
@@ -10,7 +10,7 @@ const navItems = [
   { to: '/dashboard',    icon: 'dashboard',   label: 'Dashboard'        },
   { to: '/simulados',    icon: 'edit_note',    label: 'Simulados'        },
   { to: '/ranking',      icon: 'leaderboard',  label: 'Rankings'         },
-  { to: '/cadernos',     icon: 'menu_book',    label: 'Caderno de Erros' },
+  { to: '/cadernos/vermelho', icon: 'menu_book', label: 'Caderno de Erros' },
   { to: '/estatisticas', icon: 'query_stats',  label: 'Estatísticas'     },
 ];
 
@@ -38,7 +38,7 @@ export default function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Avatar */}
-      <div className="mb-8 flex flex-col items-center text-center">
+      <Link to="/perfil" className="mb-8 flex flex-col items-center text-center hover:opacity-80 transition-opacity">
         <div className="w-20 h-20 rounded-full bg-gray-200 mb-3 overflow-hidden border-2 border-border-hub p-1">
           {user?.fotoUrl
             ? <img src={user.fotoUrl} alt={user.nome} className="w-full h-full object-cover rounded-full" />
@@ -49,7 +49,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
         <h2 className="font-bold text-dark-text text-sm">{user?.apelido || user?.nome}</h2>
         <p className="text-xs text-subtle-text font-medium">Concurseiro</p>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="space-y-1 flex-1">

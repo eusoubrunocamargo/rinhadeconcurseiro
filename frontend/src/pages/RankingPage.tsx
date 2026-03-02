@@ -30,7 +30,6 @@ export default function RankingPage() {
   async function loadSimulados() {
     try {
       const data = await getSimulados();
-      // Filtrar apenas disponíveis e ordenar por número
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
       const disponiveis = data
@@ -75,74 +74,55 @@ export default function RankingPage() {
     }
   }
 
-  function getMedalha(posicao: number): string {
-    switch (posicao) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return '';
-    }
-  }
-
-  function getPosicaoStyle(posicao: number): string {
-    switch (posicao) {
-      case 1:
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 2:
-        return 'bg-gray-100 text-gray-700 border-gray-300';
-      case 3:
-        return 'bg-orange-100 text-orange-800 border-orange-300';
-      default:
-        return 'bg-white border-gray-200';
-    }
-  }
+  const top3 = ranking?.ranking.slice(0, 3) ?? [];
+  const resto = ranking?.ranking.slice(3) ?? [];
 
   return (
     <Layout>
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Ranking</h1>
-        <p className="text-gray-600">Veja sua posição entre os concurseiros</p>
+
+      {/* ── Header ── */}
+      <div className="mb-7">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-subtle-text mb-1">
+          Câmara dos Deputados · CEBRASPE
+        </p>
+        <h1 className="text-2xl font-black text-dark-text tracking-tight">Rankings</h1>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => handleTabChange('geral')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            tab === 'geral'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          🏆 Ranking Geral
-        </button>
-        <button
-          onClick={() => handleTabChange('simulado')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            tab === 'simulado'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          📝 Por Simulado
-        </button>
+      {/* ── Tabs ── */}
+      <div
+        className="flex gap-1 p-1 rounded-2xl mb-6"
+        style={{ backgroundColor: '#F5F5F5' }}
+      >
+        {(['geral', 'simulado'] as TabType[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => handleTabChange(t)}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+            style={
+              tab === t
+                ? { backgroundColor: '#1A1A1A', color: '#fff' }
+                : { backgroundColor: 'transparent', color: '#999' }
+            }
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+              {t === 'geral' ? 'leaderboard' : 'edit_note'}
+            </span>
+            {t === 'geral' ? 'Geral' : 'Por Simulado'}
+          </button>
+        ))}
       </div>
 
-      {/* Seletor de Simulado */}
+      {/* ── Seletor de simulado ── */}
       {tab === 'simulado' && (
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Selecione o simulado:
-          </label>
+          <p className="text-[10px] font-black uppercase tracking-widest text-subtle-text mb-2 px-1">
+            Selecione o simulado
+          </p>
           <select
             value={simuladoSelecionado ?? ''}
             onChange={(e) => setSimuladoSelecionado(Number(e.target.value))}
-            className="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 rounded-2xl text-sm font-bold text-dark-text appearance-none outline-none"
+            style={{ backgroundColor: '#fff', border: '1px solid #E5E5E5' }}
           >
             {simulados.map((s) => (
               <option key={s.id} value={s.id}>
@@ -153,193 +133,246 @@ export default function RankingPage() {
         </div>
       )}
 
-      {/* Posição do Usuário Atual */}
+      {/* ── Minha posição ── */}
       {ranking?.currentUserPosition && (
-        <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
-          <p className="text-sm text-blue-600 font-medium mb-2">Sua posição</p>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-full font-bold text-lg">
+        <div
+          className="flex items-center gap-4 px-5 py-4 rounded-[28px] mb-5"
+          style={{ backgroundColor: '#F5F5F5', border: '1px solid #E5E5E5' }}
+        >
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: '#1A1A1A' }}
+          >
+            <span className="text-xs font-black text-white">
               {ranking.currentUserPosition.posicao}º
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-800">
-                {ranking.currentUserPosition.apelido || ranking.currentUserPosition.nome}
-              </p>
-              <div className="flex gap-4 text-sm text-gray-600">
-                <span className="font-medium text-blue-600">
-                  {ranking.currentUserPosition.pontuacao} pts
-                </span>
-                <span>
-                  {ranking.currentUserPosition.acertos} acertos
-                </span>
-                {tab === 'geral' && (
-                  <span>
-                    {ranking.currentUserPosition.simuladosFinalizados} simulados
-                  </span>
-                )}
-              </div>
-            </div>
+            </span>
           </div>
-        </div>
-      )}
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-6">{error}</div>
-      )}
-
-      {/* Ranking List */}
-      {!loading && ranking && (
-        <>
-          {/* Info */}
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-500">
-              {ranking.totalParticipantes} participante{ranking.totalParticipantes !== 1 ? 's' : ''}
-              {ranking.simuladoTitulo && ` • ${ranking.simuladoTitulo}`}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest text-subtle-text mb-0.5">
+              Sua posição
+            </p>
+            <p className="text-sm font-black text-dark-text truncate">
+              {ranking.currentUserPosition.apelido || ranking.currentUserPosition.nome}
             </p>
           </div>
+          <div className="text-right shrink-0">
+            <p className="text-sm font-black text-dark-text">
+              {ranking.currentUserPosition.pontuacao} pts
+            </p>
+            <p className="text-[10px] font-bold" style={{ color: '#999' }}>
+              {ranking.currentUserPosition.percentualAcerto.toFixed(1)}%
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Loading ── */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* ── Erro ── */}
+      {error && (
+        <div
+          className="flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-medium mb-4"
+          style={{ backgroundColor: '#FFF5F5', color: '#DC2626', border: '1px solid #FECACA' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>error</span>
+          {error}
+        </div>
+      )}
+
+      {/* ── Lista ── */}
+      {!loading && ranking && (
+        <div className="flex flex-col gap-5">
+
+          {/* Info */}
+          <p className="text-[10px] font-bold uppercase tracking-widest text-subtle-text px-1">
+            {ranking.totalParticipantes} participante{ranking.totalParticipantes !== 1 ? 's' : ''}
+            {ranking.simuladoTitulo && ` · ${ranking.simuladoTitulo}`}
+          </p>
 
           {ranking.ranking.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
-              <span className="text-5xl block mb-4">🏆</span>
-              <p>Nenhum participante ainda.</p>
+            <div
+              className="bg-white rounded-[28px] p-10 flex flex-col items-center gap-3"
+              style={{ border: '1px solid #E5E5E5' }}
+            >
+              <span className="material-symbols-outlined text-subtle-text" style={{ fontSize: '40px' }}>
+                leaderboard
+              </span>
+              <p className="text-sm font-bold text-dark-text">Nenhum participante ainda</p>
               <Link
                 to="/simulados"
-                className="mt-4 inline-block text-blue-600 hover:text-blue-700 font-medium"
+                className="text-[10px] font-black uppercase tracking-widest"
+                style={{ color: '#FF4D4D' }}
               >
-                Seja o primeiro!
+                Seja o primeiro →
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
-              {ranking.ranking.map((item) => (
-                <RankingRow
-                  key={item.usuarioId}
-                  item={item}
-                  tipo={ranking.tipo}
-                  getMedalha={getMedalha}
-                  getPosicaoStyle={getPosicaoStyle}
-                />
-              ))}
-            </div>
+            <>
+              {/* Top 3 */}
+              {top3.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {top3.map((item) => (
+                    <RankingRow key={item.usuarioId} item={item} tipo={ranking.tipo} destaque />
+                  ))}
+                </div>
+              )}
+
+              {/* Demais posições */}
+              {resto.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  {resto.map((item) => (
+                    <RankingRow key={item.usuarioId} item={item} tipo={ranking.tipo} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
-        </>
+        </div>
       )}
     </Layout>
   );
 }
 
-// Componente separado para cada linha do ranking
+// ── RankingRow ──────────────────────────────────────────────────────────────
+
+const MEDAL_CONFIG: Record<number, { bg: string; cor: string; border: string; icon: string }> = {
+  1: { bg: '#FFFBEB', cor: '#D97706', border: '#FDE68A', icon: 'workspace_premium' },
+  2: { bg: '#F5F5F5', cor: '#666',    border: '#E5E5E5', icon: 'military_tech'      },
+  3: { bg: '#FFF7ED', cor: '#C2752A', border: '#FED7AA', icon: 'stars'              },
+};
+
 function RankingRow({
   item,
   tipo,
-  getMedalha,
-  getPosicaoStyle,
+  destaque = false,
 }: {
   item: RankingItem;
   tipo: 'SIMULADO' | 'GERAL';
-  getMedalha: (posicao: number) => string;
-  getPosicaoStyle: (posicao: number) => string;
+  destaque?: boolean;
 }) {
-  const medalha = getMedalha(item.posicao);
-  const posicaoStyle = getPosicaoStyle(item.posicao);
+  const medal = MEDAL_CONFIG[item.posicao];
+  const isTop3 = item.posicao <= 3;
+
+  const posStyle = isTop3
+    ? { bg: medal.bg, cor: medal.cor, border: medal.border }
+    : { bg: '#F5F5F5', cor: '#999', border: '#EEEEEE' };
+
+  const cardBorder = item.isCurrentUser
+    ? '1.5px solid #1A1A1A'
+    : destaque
+    ? `1px solid ${posStyle.border}`
+    : '1px solid #E5E5E5';
 
   return (
     <div
-      className={`rounded-lg border p-4 transition-all ${posicaoStyle} ${
-        item.isCurrentUser ? 'ring-2 ring-blue-400' : ''
-      }`}
+      className="bg-white rounded-[28px] overflow-hidden"
+      style={{ border: cardBorder }}
     >
-      <div className="flex items-center gap-4">
-        {/* Posição */}
-        <div className="flex items-center justify-center w-10 h-10 shrink-0">
-          {medalha ? (
-            <span className="text-2xl">{medalha}</span>
+      <div className="flex items-center gap-3 px-4 py-3.5">
+
+        {/* Posição / medalha */}
+        <div
+          className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+          style={{ backgroundColor: posStyle.bg, border: `1px solid ${posStyle.border}` }}
+        >
+          {isTop3 ? (
+            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: posStyle.cor }}>
+              {medal.icon}
+            </span>
           ) : (
-            <span className="text-lg font-bold text-gray-500">{item.posicao}º</span>
+            <span className="text-xs font-black" style={{ color: posStyle.cor }}>
+              {item.posicao}º
+            </span>
           )}
         </div>
 
         {/* Avatar */}
-        <div className="shrink-0">
-          {item.fotoUrl ? (
-            <img
-              src={item.fotoUrl}
-              alt={item.nome}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-medium">
-              {(item.apelido || item.nome).charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
+        {item.fotoUrl ? (
+          <img
+            src={item.fotoUrl}
+            alt={item.nome}
+            className="w-9 h-9 rounded-full object-cover shrink-0"
+            style={{ border: '1.5px solid #E5E5E5' }}
+          />
+        ) : (
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0"
+            style={{ backgroundColor: '#F5F5F5', color: '#1A1A1A' }}
+          >
+            {(item.apelido || item.nome).charAt(0).toUpperCase()}
+          </div>
+        )}
 
         {/* Nome */}
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-800 truncate">
-            {item.apelido || item.nome}
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-black text-dark-text truncate">
+              {item.apelido || item.nome}
+            </p>
             {item.isCurrentUser && (
-              <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+              <span
+                className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: '#F5F5F5', color: '#1A1A1A' }}
+              >
                 Você
               </span>
             )}
-          </p>
+          </div>
           {tipo === 'GERAL' && (
-            <p className="text-xs text-gray-500">
-              {item.simuladosFinalizados} simulado{item.simuladosFinalizados !== 1 ? 's' : ''} finalizado{item.simuladosFinalizados !== 1 ? 's' : ''}
+            <p className="text-[10px] mt-0.5" style={{ color: '#999' }}>
+              {item.simuladosFinalizados} simulado{item.simuladosFinalizados !== 1 ? 's' : ''}
             </p>
           )}
         </div>
 
-        {/* Estatísticas */}
-        <div className="hidden sm:flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-1" title="Acertos">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            <span className="text-gray-600">{item.acertos}</span>
-          </div>
-          <div className="flex items-center gap-1" title="Erros">
-            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-            <span className="text-gray-600">{item.erros}</span>
-          </div>
-          <div className="flex items-center gap-1" title="Em branco">
-            <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
-            <span className="text-gray-600">{item.emBranco}</span>
-          </div>
+        {/* Stats — desktop */}
+        <div className="hidden sm:flex items-center gap-4 shrink-0">
+          {[
+            { cor: '#059669', valor: item.acertos  },
+            { cor: '#DC2626', valor: item.erros     },
+            { cor: '#CCCCCC', valor: item.emBranco  },
+          ].map(({ cor, valor }, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cor }} />
+              <span className="text-xs font-bold" style={{ color: '#999' }}>{valor}</span>
+            </div>
+          ))}
         </div>
 
         {/* Pontuação */}
         <div className="text-right shrink-0">
-          <p className={`text-lg font-bold ${item.pontuacao >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+          <p
+            className="text-sm font-black"
+            style={{ color: item.pontuacao >= 0 ? '#1A1A1A' : '#DC2626' }}
+          >
             {item.pontuacao} pts
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-[10px] font-bold" style={{ color: '#999' }}>
             {item.percentualAcerto.toFixed(1)}%
           </p>
         </div>
       </div>
 
-      {/* Estatísticas mobile */}
-      <div className="flex sm:hidden items-center gap-4 text-xs mt-3 pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-          <span className="text-gray-600">{item.acertos} acertos</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-          <span className="text-gray-600">{item.erros} erros</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
-          <span className="text-gray-600">{item.emBranco} em branco</span>
-        </div>
+      {/* Stats — mobile */}
+      <div
+        className="flex sm:hidden items-center gap-4 text-[10px] font-bold px-4 pb-3"
+        style={{ color: '#999' }}
+      >
+        {[
+          { cor: '#059669', label: `${item.acertos} acertos`  },
+          { cor: '#DC2626', label: `${item.erros} erros`      },
+          { cor: '#CCCCCC', label: `${item.emBranco} em branco` },
+        ].map(({ cor, label }) => (
+          <div key={label} className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cor }} />
+            {label}
+          </div>
+        ))}
       </div>
     </div>
   );

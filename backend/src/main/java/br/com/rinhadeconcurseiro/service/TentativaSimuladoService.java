@@ -9,6 +9,7 @@ import br.com.rinhadeconcurseiro.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +27,25 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TentativaSimuladoService {
 
+    // language=SQL
+    private static final String UPSERT_RESPOSTA_SQL = """
+            INSERT INTO resposta_questao (
+                id_tentativa, id_simulado_questao, resposta, confianca, tipo_erro, updated_at
+            ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT (id_tentativa, id_simulado_questao)
+            DO UPDATE SET
+                resposta   = EXCLUDED.resposta,
+                confianca  = EXCLUDED.confianca,
+                tipo_erro  = EXCLUDED.tipo_erro,
+                updated_at = CURRENT_TIMESTAMP
+            """;
+
     private final TentativaSimuladoRepository tentativaRepository;
     private final RespostaQuestaoRepository respostaRepository;
     private final SimuladoRepository simuladoRepository;
     private final SimuladoQuestaoRepository simuladoQuestaoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     //===========
     // Iniciar tentativa
@@ -113,57 +128,40 @@ public class TentativaSimuladoService {
                     tentativaId, usuarioId);
             return;
         }
-
-        // Deduplica por simuladoQuestaoId (última resposta vence) para evitar processamento duplicado.
-        Map<Long, RespostaRequest> respostasPorQuestao = request.respostas().stream()
-                .collect(Collectors.toMap(
-                        RespostaRequest::simuladoQuestaoId,
-                        req -> req,
-                        (oldValue, newValue) -> newValue,
-                        LinkedHashMap::new
-                ));
-
-        Map<Long, SimuladoQuestao> simuladoQuestoesPorId = simuladoQuestaoRepository
-                .findAllById(respostasPorQuestao.keySet())
-                .stream()
-                .collect(Collectors.toMap(SimuladoQuestao::getId, sq -> sq, (oldValue, newValue) -> oldValue, HashMap::new));
-
-        List<Long> idsInvalidos = new ArrayList<>();
-        for (Long simuladoQuestaoId : respostasPorQuestao.keySet()) {
-            SimuladoQuestao sq = simuladoQuestoesPorId.get(simuladoQuestaoId);
-            if (sq == null || sq.getSimulado() == null || !sq.getSimulado().getId().equals(tentativa.getSimulado().getId())) {
-                idsInvalidos.add(simuladoQuestaoId);
-            }
-        }
-
-        if (!idsInvalidos.isEmpty()) {
-            throw new EntityNotFoundException("Questão do simulado não encontrada: " + idsInvalidos.get(0));
-        }
-
-        for (RespostaRequest req : respostasPorQuestao.values()) {
-            respostaRepository.upsertResposta(
-                    tentativaId,
-                    req.simuladoQuestaoId(),
-                    req.resposta() == null ? null : req.resposta().name(),
-                    req.confianca() == null ? null : req.confianca().name(),
-                    req.tipoErro() == null ? null : req.tipoErro().name()
-            );
-        }
+        int quantidade = persistirRespostas(tentativa, request.respostas());
+        log.info("Respostas salvas em batch: tentativaId={} usuarioId={} quantidade={}",
+                tentativaId, usuarioId, quantidade);
     }
 
     //===========
     // Finalizar tentativa
     //===========
 
+    /**
+     * Finaliza a tentativa, opcionalmente persistindo o último lote de respostas
+     * na mesma transação antes de fechar — eliminando a race condition entre
+     * chamadas separadas de salvar + finalizar.
+     */
     @Transactional
-    public TentativaDetalheResponse finalizar(Long tentativaId, Long usuarioId) {
+    public TentativaDetalheResponse finalizar(Long tentativaId, Long usuarioId,
+                                              List<RespostaRequest> respostasFinais) {
         TentativaSimulado tentativa = getTentativaDoUsuarioComLock(tentativaId, usuarioId);
-        List<RespostaQuestao> respostas = respostaRepository.findDetalhadasByTentativaId(tentativaId);
+
         if (tentativa.getFinalizada()) {
             log.info("Finalização idempotente: tentativaId={} usuarioId={} motivo=ja_finalizada",
                     tentativaId, usuarioId);
-            return toDetalheResponse(tentativa, respostas);
+            return toDetalheResponse(tentativa, respostaRepository.findDetalhadasByTentativaId(tentativaId));
         }
+
+        // Persiste o último lote atomicamente, antes de carregar as respostas para classificação.
+        // As respostas são lidas DEPOIS do upsert para evitar estado obsoleto no cache JPA.
+        if (respostasFinais != null && !respostasFinais.isEmpty()) {
+            int quantidade = persistirRespostas(tentativa, respostasFinais);
+            log.info("Respostas finais salvas atomicamente: tentativaId={} usuarioId={} quantidade={}",
+                    tentativaId, usuarioId, quantidade);
+        }
+
+        List<RespostaQuestao> respostas = respostaRepository.findDetalhadasByTentativaId(tentativaId);
 
         //classificar cada resposta
         int acertos = 0;
@@ -195,6 +193,12 @@ public class TentativaSimuladoService {
                 tentativaId, usuarioId, acertos, erros, emBranco);
 
         return toDetalheResponse(tentativa, respostas);
+    }
+
+    /** Sobrecarga sem respostas finais — mantém compatibilidade com testes e clientes legados. */
+    @Transactional
+    public TentativaDetalheResponse finalizar(Long tentativaId, Long usuarioId) {
+        return finalizar(tentativaId, usuarioId, null);
     }
 
     //===========
@@ -438,13 +442,57 @@ public class TentativaSimuladoService {
     }
 
     private TentativaSimulado getTentativaDoUsuarioComLock(Long tentativaId, Long usuarioId) {
-        Optional<TentativaSimulado> locked = tentativaRepository.findByIdAndUsuarioIdWithLock(tentativaId, usuarioId);
-        if (locked == null) {
-            locked = Optional.empty();
+        return tentativaRepository.findByIdAndUsuarioIdWithLock(tentativaId, usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Tentativa não encontrada"));
+    }
+
+    /**
+     * Valida e persiste um lote de respostas via JDBC batch upsert.
+     * Reutilizado tanto pelo auto-save ({@link #salvarRespostas}) quanto
+     * pela finalização atômica ({@link #finalizar(Long, Long, List)}).
+     *
+     * @return quantidade de respostas gravadas após deduplicação
+     */
+    private int persistirRespostas(TentativaSimulado tentativa, List<RespostaRequest> respostas) {
+        // Deduplica por simuladoQuestaoId (última resposta vence)
+        Map<Long, RespostaRequest> respostasPorQuestao = respostas.stream()
+                .collect(Collectors.toMap(
+                        RespostaRequest::simuladoQuestaoId,
+                        req -> req,
+                        (oldValue, newValue) -> newValue,
+                        LinkedHashMap::new
+                ));
+
+        Map<Long, SimuladoQuestao> simuladoQuestoesPorId = simuladoQuestaoRepository
+                .findAllById(respostasPorQuestao.keySet())
+                .stream()
+                .collect(Collectors.toMap(SimuladoQuestao::getId, sq -> sq,
+                        (oldValue, newValue) -> oldValue, HashMap::new));
+
+        List<Long> idsInvalidos = new ArrayList<>();
+        for (Long simuladoQuestaoId : respostasPorQuestao.keySet()) {
+            SimuladoQuestao sq = simuladoQuestoesPorId.get(simuladoQuestaoId);
+            if (sq == null || sq.getSimulado() == null
+                    || !sq.getSimulado().getId().equals(tentativa.getSimulado().getId())) {
+                idsInvalidos.add(simuladoQuestaoId);
+            }
         }
 
-        return locked.or(() -> tentativaRepository.findByIdAndUsuarioId(tentativaId, usuarioId))
-                .orElseThrow(() -> new EntityNotFoundException("Tentativa não encontrada"));
+        if (!idsInvalidos.isEmpty()) {
+            throw new EntityNotFoundException("Questão do simulado não encontrada: " + idsInvalidos.get(0));
+        }
+
+        List<RespostaRequest> batch = new ArrayList<>(respostasPorQuestao.values());
+        jdbcTemplate.batchUpdate(UPSERT_RESPOSTA_SQL, batch, batch.size(),
+                (ps, req) -> {
+                    ps.setLong(1, tentativa.getId());
+                    ps.setLong(2, req.simuladoQuestaoId());
+                    ps.setString(3, req.resposta() == null ? null : req.resposta().name());
+                    ps.setString(4, req.confianca() == null ? null : req.confianca().name());
+                    ps.setString(5, req.tipoErro() == null ? null : req.tipoErro().name());
+                });
+
+        return batch.size();
     }
 
     private TentativaResumoResponse toResumoResponse(TentativaSimulado t) {
