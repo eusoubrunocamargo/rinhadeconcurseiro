@@ -48,7 +48,7 @@ public class TentativaSimulado {
     @Builder.Default
     private Boolean finalizada = false;
 
-    @OneToMany(mappedBy = "tentativa", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tentativa", orphanRemoval = true)
     @Builder.Default
     private List<RespostaQuestao> respostas = new ArrayList<>();
 
