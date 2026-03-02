@@ -431,10 +431,12 @@ function AssuntosDestaque({ estatisticas }: { estatisticas: EstatisticaAssunto[]
   // Top 5 domínio: tier DOMINIO, mín. 10 questões, maior percentual primeiro
   const topDominio = estatisticas
     .filter(e => e.tier === 'DOMINIO' && e.total >= 10)
+    .sort((a, b) => b.percentual - a.percentual)
     .slice(0, 5);
 
-  // Top 5 críticos: menor percentual primeiro (já vem ordenado DESC do backend, então inverter)
+  // Top 5 para atenção: apenas assuntos fora de DOMINIO, menor percentual primeiro
   const topCritico = [...estatisticas]
+    .filter(e => e.tier !== 'DOMINIO')
     .sort((a, b) => a.percentual - b.percentual)
     .slice(0, 5);
 
