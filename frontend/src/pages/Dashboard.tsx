@@ -127,8 +127,8 @@ export default function Dashboard() {
                   </div>
                   <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#F0F0F0' }}>
                     <div
-                      className="h-full bg-dark-text rounded-full transition-all duration-700"
-                      style={{ width: `${Math.max(xpPct, 2)}%` }}
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${Math.max(xpPct, 2)}%`, backgroundColor: '#FF4D4D'}}
                     />
                   </div>
                   <span className="text-[10px]" style={{ color: '#BBBBBB' }}>{50 - xpAtual} questões para o próx. nível</span>
@@ -170,8 +170,8 @@ export default function Dashboard() {
             </div>
           ) : progresso ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <MetricCard value={progresso.simuladosFinalizados} label="Finalizados" icon="check_circle" destaque />
-              <MetricCard value={progresso.simuladosEmAndamento} label="Em andamento" icon="pending" />
+              <MetricCard value={progresso.simuladosFinalizados} label="Simulados finalizados" icon="check_circle" destaque />
+              <MetricCard value={progresso.simuladosEmAndamento} label="em andamento" icon="pending" />
               <MetricCard value={`${aproveitamento.toFixed(1)}%`} label="Aproveitamento" icon="trending_up" />
               <MetricCard value={totalQuestoes} label="Questões" icon="bolt" />
             </div>
@@ -327,37 +327,40 @@ export default function Dashboard() {
 // ── Sub-componentes ────────────────────────────────────────────────
 
 function MetricCard({
-  value, label, icon, destaque,
+  value, label, icon,
 }: {
   value: string | number;
   label: string;
   icon: string;
   destaque?: boolean;
 }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <div
       className="rounded-[28px] p-5 flex flex-col justify-between h-32 hover:-translate-y-1 transition-transform duration-300 cursor-default"
-      style={{
-        backgroundColor: destaque ? '#1A1A1A' : '#ffffff',
-        border: '1px solid #E5E5E5',
-      }}
+      style={{ backgroundColor: '#ffffff', border: '1px solid #E5E5E5' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="w-9 h-9 rounded-full flex items-center justify-center"
+        className="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200"
         style={{
-          backgroundColor: destaque ? 'rgba(255,255,255,0.1)' : '#F5F5F5',
-          border: destaque ? 'none' : '1px solid #E5E5E5',
+          backgroundColor: hovered ? '#1A1A1A' : '#F5F5F5',
+          border: '1px solid #E5E5E5',
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '16px', color: destaque ? '#FF4D4D' : '#999999' }}>
+        <span
+          className="material-symbols-outlined transition-colors duration-200"
+          style={{ fontSize: '16px', color: hovered ? '#FF4D4D' : '#999999' }}
+        >
           {icon}
         </span>
       </div>
       <div>
-        <p className="text-2xl font-black leading-none" style={{ color: destaque ? '#ffffff' : '#1A1A1A' }}>
+        <p className="text-2xl font-black leading-none" style={{ color: '#1A1A1A' }}>
           {value}
         </p>
-        <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: destaque ? 'rgba(255,255,255,0.4)' : '#999999' }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: '#999999' }}>
           {label}
         </p>
       </div>
