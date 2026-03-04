@@ -250,7 +250,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-dark-text truncate">{t.simuladoTitulo}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <div className="flex-1 h-2 rounded-full overflow-hidden max-w-[160px]" style={{ backgroundColor: '#EEEEEE' }}>
+                          <div className="flex-1 h-2 rounded-full overflow-hidden max-w-40" style={{ backgroundColor: '#EEEEEE' }}>
                             <div
                               className="h-full rounded-full transition-all"
                               style={{ width: `${Math.max(pct, 1)}%`, backgroundColor: '#FF4D4D' }}
