@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import type { SimuladoDetalhado, NivelConfianca, RespostaRequest } from '../types';
+import type { SimuladoDetalhado, SimuladoQuestao, NivelConfianca, RespostaRequest } from '../types';
 import { getSimuladoById } from '../services/simulado';
 import { iniciarSimulado, salvarRespostas, getTentativaById } from '../services/tentativa';
 import { isHttpStatus } from '../services/httpError';
@@ -77,11 +77,25 @@ export default function SimuladoPlay() {
     try {
       setLoading(true);
       const data = await getSimuladoById(simuladoId);
-      setSimulado(data);
+      const questoesValidas = (data.questoes ?? []).filter(
+        (q): q is SimuladoQuestao => !!q && typeof q.id === 'number' && typeof q.questaoId === 'number'
+      );
+      const simuladoNormalizado: SimuladoDetalhado = {
+        ...data,
+        questoes: questoesValidas,
+      };
+
+      if (questoesValidas.length === 0) {
+        setError('Este simulado ainda não possui questões disponíveis.');
+        setSimulado(simuladoNormalizado);
+        return;
+      }
+
+      setSimulado(simuladoNormalizado);
 
       if (tentativaIdFromState && !refazerFromState) {
         setTentativaId(tentativaIdFromState);
-        await carregarRespostasExistentes(tentativaIdFromState, data);
+        await carregarRespostasExistentes(tentativaIdFromState, simuladoNormalizado);
       } else {
         const tentativa = await iniciarSimulado(simuladoId, refazerFromState ?? false);
         setTentativaId(tentativa.tentativaId);
@@ -240,6 +254,16 @@ export default function SimuladoPlay() {
   }
 
   // ── Derivados ─────────────────────────────────────────────────────────────
+
+  if (simulado.questoes.length === 0) {
+    return (
+      <Layout>
+        <div className="p-4 rounded-xl text-sm font-medium" style={{ backgroundColor: '#FFF5F5', color: '#DC2626' }}>
+          Este simulado ainda não possui questões disponíveis.
+        </div>
+      </Layout>
+    );
+  }
 
   const questaoAtualData = simulado.questoes[questaoAtual];
   const totalQuestoes    = simulado.questoes.length;
