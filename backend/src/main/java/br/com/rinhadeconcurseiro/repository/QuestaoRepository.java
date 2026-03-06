@@ -32,4 +32,27 @@ public interface QuestaoRepository
     long countByAssuntoIdAndAtivoTrue(@Param("assuntoId") Long assuntoId);
 
     List<Questao> findByMateriaId(Long id);
+
+    //=== utilizados pelo sistema de duelos ===//
+    @Query("""
+            SELECT q FROM Questao q
+            WHERE q.materia.id = :materiaId
+                AND q.ativo = true
+            ORDER BY FUNCTION('RANDOM')
+            """)
+    List<Questao> sortearPorMateria(
+            @Param("materiaId") Long materiaId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT q FROM Questao q
+            WHERE q.assunto.id = :assuntoId
+                AND q.ativo = true
+               ORDER BY FUNCTION('RANDOM')
+            """)
+    List<Questao> sortearPorAssunto(
+        @Param("assuntoId") Long assuntoId,
+        Pageable pageable
+    );
 }

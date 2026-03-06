@@ -1,10 +1,12 @@
 package br.com.rinhadeconcurseiro.controller;
 
 import br.com.rinhadeconcurseiro.dto.request.EnviarConviteRequest;
+import br.com.rinhadeconcurseiro.dto.request.IniciarDueloRequest;
 import br.com.rinhadeconcurseiro.dto.response.ConviteResponse;
 import br.com.rinhadeconcurseiro.dto.response.DueloResponse;
 import br.com.rinhadeconcurseiro.entity.Usuario;
 import br.com.rinhadeconcurseiro.service.ConviteService;
+import br.com.rinhadeconcurseiro.service.DueloService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DueloController {
 
+    private final DueloService dueloService;
     private final ConviteService conviteService;
 
     @PostMapping("/convites")
@@ -44,5 +47,14 @@ public class DueloController {
             @PathVariable UUID token) {
 
         return ResponseEntity.ok(conviteService.aceitar(token, usuario));
+    }
+
+    @PostMapping("/{id}/iniciar")
+    public ResponseEntity<DueloResponse> iniciarDuelo(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id,
+            @Valid @RequestBody IniciarDueloRequest request
+            ){
+        return ResponseEntity.ok(dueloService.iniciar(id, usuario, request));
     }
 }
