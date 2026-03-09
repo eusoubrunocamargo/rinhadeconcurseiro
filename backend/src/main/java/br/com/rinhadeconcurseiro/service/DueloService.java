@@ -86,4 +86,29 @@ public class DueloService {
             );
         };
     }
+
+    // DueloService.java — adicionar:
+    @Transactional(readOnly = true)
+    public DueloResponse buscar(Long id, Usuario usuario) {
+        Duelo duelo = dueloRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Duelo não encontrado."));
+
+        boolean ehParticipante = duelo.getHost().getId().equals(usuario.getId())
+                || duelo.getDesafiado().getId().equals(usuario.getId());
+
+        if (!ehParticipante) {
+            throw new DueloException("Você não tem acesso a este duelo.");
+        }
+
+        return dueloMapper.toDueloResponse(duelo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DueloResponse> listarPorUsuario(Usuario usuario) {
+        return dueloRepository
+                .findByHostIdOrDesafiadoId(usuario.getId(), usuario.getId())
+                .stream()
+                .map(dueloMapper::toDueloResponse)
+                .toList();
+    }
 }

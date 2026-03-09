@@ -13,6 +13,7 @@ import CadernoView from './pages/CadernoView';
 import RankingPage from './pages/RankingPage';
 import OAuthCallback from './pages/OAuthCallback';
 import Estatisticas from './pages/Estatisticas';
+import Duelo from './pages/Duelo';
 
 
 
@@ -99,6 +100,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Estatisticas />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/duelo"
+        element={
+          <ProtectedRoute>
+            <Duelo />
           </ProtectedRoute>
         }
       />

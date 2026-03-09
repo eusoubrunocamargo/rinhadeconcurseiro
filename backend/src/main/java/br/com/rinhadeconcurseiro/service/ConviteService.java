@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -128,4 +129,15 @@ public class ConviteService {
 
         return dueloMapper.toDueloResponse(dueloRepository.save(duelo));
     }
+
+    // ConviteService.java — adicionar:
+    @Transactional(readOnly = true)
+    public List<ConviteResponse> listarPendentes(Usuario usuario) {
+        return conviteDueloRepository
+                .findByDestinatarioIdAndStatus(usuario.getId(), StatusConvite.PENDENTE)
+                .stream()
+                .map(dueloMapper::toConviteResponse)
+                .toList();
+    }
+
 }

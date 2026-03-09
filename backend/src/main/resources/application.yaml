@@ -57,5 +57,7 @@ server:
 app:
   frontend:
     url: http://localhost:5173
+  cors:
+    allowed-origins: http://localhost:5173
 
 debug: ${APP_DEBUG:false}

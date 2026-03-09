@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,5 +57,26 @@ public class DueloController {
             @Valid @RequestBody IniciarDueloRequest request
             ){
         return ResponseEntity.ok(dueloService.iniciar(id, usuario, request));
+    }
+
+    // Adicionar ao DueloController.java
+
+    @GetMapping("/convites/pendentes")
+    public ResponseEntity<List<ConviteResponse>> listarConvitesPendentes(
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(conviteService.listarPendentes(usuario));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DueloResponse> buscarDuelo(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(dueloService.buscar(id, usuario));
+    }
+
+    @GetMapping("/meus")
+    public ResponseEntity<List<DueloResponse>> listarMeusDuelos(
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(dueloService.listarPorUsuario(usuario));
     }
 }

@@ -12,6 +12,7 @@ const navItems = [
   { to: '/ranking',      icon: 'leaderboard',  label: 'Rankings'         },
   { to: '/cadernos/vermelho', icon: 'menu_book', label: 'Caderno de Erros' },
   { to: '/estatisticas', icon: 'query_stats',  label: 'Estatísticas'     },
+  { to: '/duelo', icon: 'swords', label: 'Duelos'}
 ];
 
 export default function Layout({ children }: LayoutProps) {
