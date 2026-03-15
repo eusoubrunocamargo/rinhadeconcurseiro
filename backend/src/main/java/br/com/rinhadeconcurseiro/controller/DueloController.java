@@ -104,5 +104,19 @@ public class DueloController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/convites/{token}/recusar")
+    public ResponseEntity<Void> recusarConvite(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable UUID token){
+        conviteService.recusar(token, usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/convites/enviado")
+    public ResponseEntity<ConviteResponse> conviteEnviado(@AuthenticationPrincipal Usuario usuario){
+        return conviteService.buscarConviteEnviado(usuario)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
 
 }

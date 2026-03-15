@@ -62,3 +62,12 @@ export async function buscarResultadoQuestoes(dueloId: number): Promise<DueloRes
   const { data } = await api.get(`/api/v1/duelos/${dueloId}/resultado-questoes`);
   return data;
 }
+
+export async function recusarConvite(token:string): Promise<void> {
+  await api.post(`/api/v1/duelos/convites/${token}/recusar`);
+}
+
+export async function buscarConviteEnviado(): Promise<ConviteResponse| undefined> {
+  const res = await api.get<ConviteResponse>('/api/v1/duelos/convites/enviado');
+  return res.status === 204 ? undefined : res.data;
+}

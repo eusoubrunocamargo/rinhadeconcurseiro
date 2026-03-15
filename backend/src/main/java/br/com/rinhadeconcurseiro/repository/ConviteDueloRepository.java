@@ -44,4 +44,6 @@ public interface ConviteDueloRepository extends JpaRepository<ConviteDuelo, Long
 
     // Para o polling do frontend — convites pendentes recebidos pelo usuário
     List<ConviteDuelo> findByDestinatarioIdAndStatus(Long destinatarioId, StatusConvite status);
+
+    Optional<ConviteDuelo> findByRemetenteIdAndStatus(Long remetenteId, StatusConvite status);
 }

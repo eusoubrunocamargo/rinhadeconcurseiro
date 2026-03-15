@@ -19,10 +19,13 @@ public class WebSocketConfig
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry){
         //broker simples em memória - máx 2 users/duelo
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
 
         //prefixo mensagens client-->server
         registry.setApplicationDestinationPrefixes("/app");
+
+        //prefixo roteamento de mensagens /user
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override

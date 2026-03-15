@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useNotificacoes } from '../../contexts/NotificacoesContext';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const navItems = [
-  { to: '/dashboard',    icon: 'dashboard',   label: 'Dashboard'        },
-  { to: '/simulados',    icon: 'edit_note',    label: 'Simulados'        },
-  { to: '/ranking',      icon: 'leaderboard',  label: 'Rankings'         },
-  { to: '/cadernos/vermelho', icon: 'menu_book', label: 'Caderno de Erros' },
-  { to: '/estatisticas', icon: 'query_stats',  label: 'Estatísticas'     },
-  { to: '/duelo', icon: 'swords', label: 'Duelos'}
+  { to: '/dashboard',         icon: 'dashboard',    label: 'Dashboard'        },
+  { to: '/simulados',         icon: 'edit_note',    label: 'Simulados'        },
+  { to: '/ranking',           icon: 'leaderboard',  label: 'Rankings'         },
+  { to: '/cadernos/vermelho', icon: 'menu_book',    label: 'Caderno de Erros' },
+  { to: '/estatisticas',      icon: 'query_stats',  label: 'Estatísticas'     },
+  { to: '/duelo',             icon: 'swords',       label: 'Duelos'           },
 ];
 
 export default function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
+  const { convitesPendentes } = useNotificacoes();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -76,6 +78,15 @@ export default function Layout({ children }: LayoutProps) {
                   {icon}
                 </span>
                 {label}
+                {/* Badge de convites pendentes — só exibe no item Duelos */}
+                {label === 'Duelos' && convitesPendentes > 0 && (
+                  <span
+                    className="ml-auto text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: '#FF4D4D', color: '#fff' }}
+                  >
+                    {convitesPendentes}
+                  </span>
+                )}
               </>
             )}
           </NavLink>
@@ -98,27 +109,25 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen flex overflow-hidden bg-background-hub font-display">
 
-      {/* ── Sidebar desktop ── */}
+      {/* Sidebar desktop */}
       <aside className="w-64 bg-white border-r border-border-hub shrink-0 flex-col hidden md:flex z-50">
         {sidebarContent}
       </aside>
 
-      {/* ── Sidebar mobile (drawer) ── */}
+      {/* Sidebar mobile (drawer) */}
       {mobileOpen && (
         <>
-          {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/40 z-40 md:hidden"
             onClick={() => setMobileOpen(false)}
           />
-          {/* Drawer */}
           <aside className="fixed top-0 left-0 h-full w-72 bg-white z-50 flex flex-col shadow-xl md:hidden overflow-y-auto">
             {sidebarContent}
           </aside>
         </>
       )}
 
-      {/* ── Área de conteúdo ── */}
+      {/* Área de conteúdo */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
 
         {/* Header mobile */}

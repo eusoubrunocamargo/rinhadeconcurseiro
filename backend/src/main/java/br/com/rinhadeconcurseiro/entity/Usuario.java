@@ -3,6 +3,7 @@ package br.com.rinhadeconcurseiro.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Usuario {
+public class Usuario implements Principal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,5 +56,10 @@ public class Usuario {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    @Override
+    public String getName() {
+        return id != null ? id.toString() : null;
     }
 }
