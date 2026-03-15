@@ -265,6 +265,7 @@ export interface DueloResponse {
   desafiado: User;
   pontosHost: number;
   pontosDesafiado: number;
+  totalQuestoes: number | null;
   vencedor: User | null;
   createdAt: string;
   finalizadoEm: string | null;
@@ -272,9 +273,20 @@ export interface DueloResponse {
 
 // Tipos de eventos que chegam via WebSocket
 export type EventoDueloTipo =
+  | 'DUELO_INICIADO'
   | 'OPONENTE_RESPONDEU'
   | 'QUESTAO_RESOLVIDA'
-  | 'DUELO_FINALIZADO';
+  | 'DUELO_FINALIZADO'
+  | 'DUELO_CANCELADO';
+
+//novo tipo para informacao das questoes do duelo
+export interface DueloQuestaoInfo {
+  dueloQuestaoId: number;
+  ordem: number;
+  enunciado: string;
+  materiaNome: string;
+  assuntoNome?: string;
+}
 
 // Payload de cada evento WebSocket vindo do servidor
 export interface EventoDueloMessage {
@@ -317,8 +329,10 @@ export interface DueloGameState {
 
   // true quando o duelo terminou
   finalizado: boolean;
+  cancelado: boolean;
   idVencedor: number | null;
 
   // Controle de conexão
   conectado: boolean;
+  iniciado: boolean;
 }

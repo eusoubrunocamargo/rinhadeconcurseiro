@@ -12,6 +12,7 @@ public record DueloResponse(
         StatusDuelo status,
         UsuarioResponse host,
         UsuarioResponse desafiado,
+        Integer totalQuestoes,
         Integer pontosHost,
         Integer pontosDesafiado,
         UsuarioResponse vencedor,

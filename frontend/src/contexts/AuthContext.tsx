@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useState, useEffect } from 'react';
 import type { User } from '../types';
-import { getCurrentUser, logout as logoutService } from '../services/auth';
+import { getCurrentUser, getOAuthLoginUrl, logout as logoutService } from '../services/auth';
 import { AuthContext, type AuthContextType } from './auth-context';
 
 // Tipos do contexto
@@ -57,8 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Redireciona para login OAuth
   function login() {
-    const apiUrl = import.meta.env.VITE_API_URL;
-    window.location.href = `${apiUrl}/oauth2/authorization/google`;
+    window.location.href = getOAuthLoginUrl();
   }
 
   // Faz logout e limpa estado

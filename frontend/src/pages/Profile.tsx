@@ -55,11 +55,15 @@ export default function Profile() {
                 alt={user.nome}
                 className="w-20 h-20 rounded-2xl object-cover"
                 style={{ border: '2px solid #E5E5E5' }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.removeAttribute('style');
+                }}
               />
             ) : (
               <div
                 className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-black"
-                style={{ backgroundColor: '#1A1A1A' }}
+                style={{ backgroundColor: '#1A1A1A', display: 'none' }}
               >
                 {inicial}
               </div>

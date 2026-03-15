@@ -3,6 +3,7 @@ package br.com.rinhadeconcurseiro.controller;
 import br.com.rinhadeconcurseiro.dto.request.EnviarConviteRequest;
 import br.com.rinhadeconcurseiro.dto.request.IniciarDueloRequest;
 import br.com.rinhadeconcurseiro.dto.response.ConviteResponse;
+import br.com.rinhadeconcurseiro.dto.response.DueloQuestaoResponse;
 import br.com.rinhadeconcurseiro.dto.response.DueloResponse;
 import br.com.rinhadeconcurseiro.entity.Usuario;
 import br.com.rinhadeconcurseiro.service.ConviteService;
@@ -79,4 +80,21 @@ public class DueloController {
             @AuthenticationPrincipal Usuario usuario) {
         return ResponseEntity.ok(dueloService.listarPorUsuario(usuario));
     }
+
+    @GetMapping("/{id}/questoes")
+    public ResponseEntity<List<DueloQuestaoResponse>> listarQuestoes(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id){
+        return ResponseEntity.ok(dueloService.listarQuestoes(id, usuario));
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarDuelo(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id){
+        dueloService.cancelar(id, usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

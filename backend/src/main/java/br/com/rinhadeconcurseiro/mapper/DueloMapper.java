@@ -36,6 +36,7 @@ public class DueloMapper {
                 .status(duelo.getStatus())
                 .host(usuarioMapper.toResponse(duelo.getHost()))
                 .desafiado(usuarioMapper.toResponse(duelo.getDesafiado()))
+                .totalQuestoes(duelo.getTotalQuestoes())
                 .pontosHost(duelo.getPontosHost())
                 .pontosDesafiado(duelo.getPontosDesafiado())
                 // vencedor pode ser null (empate ou duelo ainda em andamento)

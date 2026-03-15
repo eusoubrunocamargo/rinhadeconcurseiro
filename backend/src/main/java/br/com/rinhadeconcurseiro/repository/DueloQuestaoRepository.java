@@ -23,4 +23,14 @@ public interface DueloQuestaoRepository
     @Modifying
     @Query("UPDATE DueloQuestao dq SET dq.resolvida = true WHERE dq.id = :id AND dq.resolvida = false")
     int marcarComoResolvida(@Param("id") Long id);
+
+    @Query("""
+    SELECT dq FROM DueloQuestao dq
+    JOIN FETCH dq.questao q
+    JOIN FETCH q.materia
+    LEFT JOIN FETCH q.assunto
+    WHERE dq.duelo.id = :dueloId
+    ORDER BY dq.ordem
+    """)
+    List<DueloQuestao> findByDueloIdWithQuestaoOrderByOrdem(@Param("dueloId") Long dueloId);
 }

@@ -1,6 +1,6 @@
 // src/pages/Duelo.tsx
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -10,10 +10,11 @@ import {
   listarMeusDuelos,
 } from '../services/duelo';
 import type { ConviteResponse, DueloResponse } from '../types';
+import DueloModal from '../components/duelo/DueloModal';
 
 export default function Duelo() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -25,6 +26,7 @@ export default function Duelo() {
   const [convitesPendentes, setConvitesPendentes] = useState<ConviteResponse[]>([]);
   const [duelosAtivos, setDuelosAtivos] = useState<DueloResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalDueloId, setModalDueloId] = useState<number | null>(null);
 
   const carregarDados = useCallback(async () => {
     try {
@@ -33,7 +35,7 @@ export default function Duelo() {
         listarMeusDuelos(),
       ]);
       setConvitesPendentes(convites);
-      setDuelosAtivos(duelos.filter(d => d.status !== 'FINALIZADO'));
+      setDuelosAtivos(duelos.filter(d => d.status !== 'FINALIZADO' && d.status !== 'CANCELADO'));
     } catch {
       // silencioso — a tela mostra vazio em vez de erro
     } finally {
@@ -64,7 +66,7 @@ export default function Duelo() {
   async function handleAceitarConvite(token: string) {
     try {
       const duelo = await aceitarConvite(token);
-      navigate(`/duelo/configurar/${duelo.id}`);
+      setModalDueloId(duelo.id);
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Erro ao aceitar convite.');
     }
@@ -203,14 +205,14 @@ export default function Duelo() {
               {duelosAtivos.map(duelo => {
                 const euSouHost = duelo.host.id === user?.id;
                 const oponente = euSouHost ? duelo.desafiado : duelo.host;
-                const destino = duelo.status === 'CONFIGURANDO'
-                  ? `/duelo/configurar/${duelo.id}`
-                  : `/duelo/live/${duelo.id}`;
+                // const destino = duelo.status === 'CONFIGURANDO'
+                //   ? `/duelo/configurar/${duelo.id}`
+                //   : `/duelo/live/${duelo.id}`;
 
                 return (
                   <button
                     key={duelo.id}
-                    onClick={() => navigate(destino)}
+                    onClick={() => setModalDueloId(duelo.id)}
                     className="flex items-center justify-between gap-4 p-4 rounded-2xl w-full text-left transition-all"
                     style={{ backgroundColor: '#FAFAFA', border: '1px solid #F0F0F0' }}
                     onMouseEnter={e => {
@@ -270,6 +272,15 @@ export default function Duelo() {
         )}
 
       </div>
+
+      {/* Modal do duelo */}
+      {modalDueloId && (
+        <DueloModal
+          dueloId={modalDueloId}
+          onClose={() => { setModalDueloId(null); carregarDados(); }}
+        />
+      )}
     </Layout>
   );
 }
+    

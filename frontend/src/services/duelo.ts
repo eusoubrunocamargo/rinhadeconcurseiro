@@ -2,6 +2,7 @@
 import api from './api';
 import type {
   ConviteResponse,
+  DueloQuestaoInfo,
   DueloResponse,
 } from '../types';
 
@@ -45,4 +46,13 @@ export async function buscarDuelo(dueloId: number): Promise<DueloResponse> {
 export async function listarMeusDuelos(): Promise<DueloResponse[]> {
   const { data } = await api.get('/api/v1/duelos/meus');
   return data;
+}
+
+export async function buscarQuestoesDuelo(dueloId: number): Promise<DueloQuestaoInfo[]> {
+  const { data } = await api.get(`/api/v1/duelos/${dueloId}/questoes`);
+  return data;
+}
+
+export async function cancelarDuelo(dueloId: number): Promise<void> {
+  await api.post(`/api/v1/duelos/${dueloId}/cancelar`);
 }

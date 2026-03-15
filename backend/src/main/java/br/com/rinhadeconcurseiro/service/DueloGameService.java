@@ -16,6 +16,8 @@ import br.com.rinhadeconcurseiro.repository.DueloRepository;
 import br.com.rinhadeconcurseiro.repository.DueloRespostaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,10 @@ public class DueloGameService {
     private final ThreadPoolTaskScheduler taskScheduler;
     private final SimpMessagingTemplate messagingTemplate;
     private final DueloMapper dueloMapper;
+
+    @Lazy
+    @Autowired
+    private DueloGameService self;
 
     @Transactional
     public void responder(Long dueloId, Usuario solicitante, RespostaDueloMessage message) {
@@ -103,7 +109,7 @@ public class DueloGameService {
             // O delay serve para o frontend exibir o feedback de "oponente respondeu"
             // antes da tela de resultado aparecer, criando tensão dramática.
             taskScheduler.schedule(
-                    () -> resolverQuestao(dueloId, dueloQuestao.getId()),
+                    () -> self.resolverQuestao(dueloId, dueloQuestao.getId()),
                     java.time.Instant.now().plusSeconds(5)
             );
         }

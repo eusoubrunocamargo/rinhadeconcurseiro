@@ -18,8 +18,10 @@ const ESTADO_INICIAL: DueloGameState = {
   oponenteRespondeu: false,
   ultimoResultado: null,
   finalizado: false,
+  cancelado: false,
   idVencedor: null,
   conectado: false,
+  iniciado: false,
 };
 
 interface UseDueloOptions {
@@ -64,6 +66,15 @@ export function useDuelo({
     setEstado(prev => {
       switch (mensagem.evento) {
 
+        case 'DUELO_INICIADO':
+          // O duelo começou — inicializamos o estado com a primeira questão.
+          return {
+            ...prev,
+            iniciado: true,
+            dueloQuestaoIdAtual: mensagem.dueloQuestaoId,
+            ordemAtual: mensagem.ordemQuestao
+          };
+
         case 'OPONENTE_RESPONDEU':
           // O oponente respondeu — atualizamos o feedback visual.
           // A resposta dele ainda não é revelada aqui.
@@ -105,6 +116,12 @@ export function useDuelo({
             dueloQuestaoIdAtual: null,
             ordemAtual: null,
           };
+
+        case 'DUELO_CANCELADO':
+          // O duelo foi cancelado por um dos jogadores ou por inatividade.
+          return {
+            ...prev,
+            cancelado: true };
 
         default:
           return prev;
