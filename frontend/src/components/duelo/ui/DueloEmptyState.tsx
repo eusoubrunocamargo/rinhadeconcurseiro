@@ -1,9 +1,9 @@
-// src/components/duelo/ui/DueloEmptyState.tsx
 export default function DueloEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-16 gap-3">
+    <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-[28px]"
+      style={{ backgroundColor: '#FAFAFA', border: '1px solid #F0F0F0' }}>
       <div className="w-14 h-14 rounded-3xl flex items-center justify-center"
-        style={{ backgroundColor: '#F5F5F5' }}>
+        style={{ backgroundColor: '#F0F0F0' }}>
         <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#CCC' }}>
           swords
         </span>

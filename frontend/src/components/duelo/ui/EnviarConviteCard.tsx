@@ -1,4 +1,3 @@
-// src/components/duelo/ui/EnviarConviteCard.tsx
 interface EnviarConviteCardProps {
   email: string;
   setEmail: (v: string) => void;
@@ -29,7 +28,7 @@ export default function EnviarConviteCard({
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-2.5">
         <input
           type="email"
           value={email}
@@ -44,7 +43,7 @@ export default function EnviarConviteCard({
         <button
           onClick={onEnviar}
           disabled={enviando || !email.trim()}
-          className="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto shrink-0 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ backgroundColor: '#FF4D4D', color: '#fff' }}
         >
           {enviando ? 'Enviando...' : 'Desafiar'}
