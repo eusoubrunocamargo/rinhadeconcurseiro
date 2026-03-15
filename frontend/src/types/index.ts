@@ -239,3 +239,111 @@ export interface Ranking {
   ranking: RankingItem[];
   currentUserPosition?: RankingItem;
 }
+
+// ============================================
+// DUELO
+// ============================================
+
+export type StatusConvite = 'PENDENTE' | 'ACEITO' | 'RECUSADO' | 'EXPIRADO';
+export type StatusDuelo = 'CONFIGURANDO' | 'EM_ANDAMENTO' | 'FINALIZADO' | 'CANCELADO';
+
+// O que o servidor envia de volta após criar um convite
+export interface ConviteResponse {
+  id: number;
+  token: string;
+  remetente: User;
+  status: StatusConvite;
+  expiresAt: string;
+  createdAt: string;
+}
+
+// O que o servidor envia sobre o estado do duelo
+export interface DueloResponse {
+  id: number;
+  status: StatusDuelo;
+  host: User;
+  desafiado: User;
+  pontosHost: number;
+  pontosDesafiado: number;
+  totalQuestoes: number | null;
+  vencedor: User | null;
+  createdAt: string;
+  finalizadoEm: string | null;
+}
+
+// Tipos de eventos que chegam via WebSocket
+export type EventoDueloTipo =
+  | 'DUELO_INICIADO'
+  | 'OPONENTE_RESPONDEU'
+  | 'QUESTAO_RESOLVIDA'
+  | 'DUELO_FINALIZADO'
+  | 'DUELO_CANCELADO';
+
+//novo tipo para informacao das questoes do duelo
+export interface DueloQuestaoInfo {
+  dueloQuestaoId: number;
+  ordem: number;
+  enunciado: string;
+  materiaNome: string;
+  assuntoNome?: string;
+}
+
+// Payload de cada evento WebSocket vindo do servidor
+export interface EventoDueloMessage {
+  evento: EventoDueloTipo;
+  dueloQuestaoId: number | null;
+  ordemQuestao: number | null;
+  hostAcertou: boolean | null;
+  desafiadoAcertou: boolean | null;
+  pontosHost: number;
+  pontosDesafiado: number;
+  idVencedor: number | null;
+  proximaDueloQuestaoId: number | null;
+  proximaOrdem: number | null;
+}
+
+// O que o cliente envia ao servidor para responder uma questão
+export interface RespostaDueloMessage {
+  dueloQuestaoId: number;
+  resposta: 'CERTO' | 'ERRADO' | null; // null = em branco
+}
+
+// Estado interno do jogo mantido pelo hook useDuelo
+export interface DueloGameState {
+  // ID da questão atual que está sendo exibida
+  dueloQuestaoIdAtual: number | null;
+  ordemAtual: number | null;
+
+  // Placar em tempo real
+  pontosHost: number;
+  pontosDesafiado: number;
+
+  // Feedback visual — o oponente já respondeu a questão atual?
+  oponenteRespondeu: boolean;
+
+  // Resultado da última questão resolvida, para exibir o feedback
+  ultimoResultado: {
+    hostAcertou: boolean;
+    desafiadoAcertou: boolean;
+  } | null;
+
+  // true quando o duelo terminou
+  finalizado: boolean;
+  cancelado: boolean;
+  idVencedor: number | null;
+
+  // Controle de conexão
+  conectado: boolean;
+  iniciado: boolean;
+}
+
+export interface DueloResultadoQuestao {
+  ordem: number;
+  enunciado: string;
+  materiaNome: string;
+  assuntoNome?: string;
+  gabarito: 'CERTO' | 'ERRADO';
+  minhaResposta: 'CERTO' | 'ERRADO' | null;
+  acertou: boolean;
+}
+

@@ -1,0 +1,122 @@
+package br.com.rinhadeconcurseiro.controller;
+
+import br.com.rinhadeconcurseiro.dto.request.EnviarConviteRequest;
+import br.com.rinhadeconcurseiro.dto.request.IniciarDueloRequest;
+import br.com.rinhadeconcurseiro.dto.response.ConviteResponse;
+import br.com.rinhadeconcurseiro.dto.response.DueloQuestaoResponse;
+import br.com.rinhadeconcurseiro.dto.response.DueloResponse;
+import br.com.rinhadeconcurseiro.dto.response.DueloResultadoQuestaoResponse;
+import br.com.rinhadeconcurseiro.entity.Usuario;
+import br.com.rinhadeconcurseiro.service.ConviteService;
+import br.com.rinhadeconcurseiro.service.DueloService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/duelos")
+@RequiredArgsConstructor
+public class DueloController {
+
+    private final DueloService dueloService;
+    private final ConviteService conviteService;
+
+    @PostMapping("/convites")
+    public ResponseEntity<ConviteResponse> enviarConvite(
+            @AuthenticationPrincipal Usuario usuario,
+            @Valid @RequestBody EnviarConviteRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(conviteService.enviar(usuario, request.emailDestinatario()));
+    }
+
+    @GetMapping("/convites/{token}")
+    public ResponseEntity<ConviteResponse> buscarConvite(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable UUID token) {
+
+        return ResponseEntity.ok(conviteService.buscarPorToken(token, usuario));
+    }
+
+    @PostMapping("/convites/{token}/aceitar")
+    public ResponseEntity<DueloResponse> aceitarConvite(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable UUID token) {
+
+        return ResponseEntity.ok(conviteService.aceitar(token, usuario));
+    }
+
+    @PostMapping("/{id}/iniciar")
+    public ResponseEntity<DueloResponse> iniciarDuelo(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id,
+            @Valid @RequestBody IniciarDueloRequest request
+            ){
+        return ResponseEntity.ok(dueloService.iniciar(id, usuario, request));
+    }
+
+    // Adicionar ao DueloController.java
+
+    @GetMapping("/convites/pendentes")
+    public ResponseEntity<List<ConviteResponse>> listarConvitesPendentes(
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(conviteService.listarPendentes(usuario));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DueloResponse> buscarDuelo(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(dueloService.buscar(id, usuario));
+    }
+
+    @GetMapping("/meus")
+    public ResponseEntity<List<DueloResponse>> listarMeusDuelos(
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(dueloService.listarPorUsuario(usuario));
+    }
+
+    @GetMapping("/{id}/questoes")
+    public ResponseEntity<List<DueloQuestaoResponse>> listarQuestoes(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id){
+        return ResponseEntity.ok(dueloService.listarQuestoes(id, usuario));
+    }
+
+    @GetMapping("/{id}/resultado-questoes")
+    public ResponseEntity<List<DueloResultadoQuestaoResponse>> listarResultadoQuestoes(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(dueloService.listarResultadoQuestoes(id, usuario));
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarDuelo(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id){
+        dueloService.cancelar(id, usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/convites/{token}/recusar")
+    public ResponseEntity<Void> recusarConvite(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable UUID token){
+        conviteService.recusar(token, usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/convites/enviado")
+    public ResponseEntity<ConviteResponse> conviteEnviado(@AuthenticationPrincipal Usuario usuario){
+        return conviteService.buscarConviteEnviado(usuario)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+}
