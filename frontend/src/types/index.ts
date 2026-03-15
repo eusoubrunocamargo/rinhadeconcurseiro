@@ -336,3 +336,14 @@ export interface DueloGameState {
   conectado: boolean;
   iniciado: boolean;
 }
+
+export interface DueloResultadoQuestao {
+  ordem: number;
+  enunciado: string;
+  materiaNome: string;
+  assuntoNome?: string;
+  gabarito: 'CERTO' | 'ERRADO';
+  minhaResposta: 'CERTO' | 'ERRADO' | null;
+  acertou: boolean;
+}
+

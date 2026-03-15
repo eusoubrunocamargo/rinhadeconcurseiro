@@ -4,6 +4,7 @@ import type {
   ConviteResponse,
   DueloQuestaoInfo,
   DueloResponse,
+  DueloResultadoQuestao,
 } from '../types';
 
 // ── Convites ──────────────────────────────────────────────────────
@@ -55,4 +56,9 @@ export async function buscarQuestoesDuelo(dueloId: number): Promise<DueloQuestao
 
 export async function cancelarDuelo(dueloId: number): Promise<void> {
   await api.post(`/api/v1/duelos/${dueloId}/cancelar`);
+}
+
+export async function buscarResultadoQuestoes(dueloId: number): Promise<DueloResultadoQuestao[]> {
+  const { data } = await api.get(`/api/v1/duelos/${dueloId}/resultado-questoes`);
+  return data;
 }

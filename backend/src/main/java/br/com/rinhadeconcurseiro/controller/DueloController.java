@@ -5,6 +5,7 @@ import br.com.rinhadeconcurseiro.dto.request.IniciarDueloRequest;
 import br.com.rinhadeconcurseiro.dto.response.ConviteResponse;
 import br.com.rinhadeconcurseiro.dto.response.DueloQuestaoResponse;
 import br.com.rinhadeconcurseiro.dto.response.DueloResponse;
+import br.com.rinhadeconcurseiro.dto.response.DueloResultadoQuestaoResponse;
 import br.com.rinhadeconcurseiro.entity.Usuario;
 import br.com.rinhadeconcurseiro.service.ConviteService;
 import br.com.rinhadeconcurseiro.service.DueloService;
@@ -86,6 +87,13 @@ public class DueloController {
             @AuthenticationPrincipal Usuario usuario,
             @PathVariable Long id){
         return ResponseEntity.ok(dueloService.listarQuestoes(id, usuario));
+    }
+
+    @GetMapping("/{id}/resultado-questoes")
+    public ResponseEntity<List<DueloResultadoQuestaoResponse>> listarResultadoQuestoes(
+            @AuthenticationPrincipal Usuario usuario,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(dueloService.listarResultadoQuestoes(id, usuario));
     }
 
     @PostMapping("/{id}/cancelar")

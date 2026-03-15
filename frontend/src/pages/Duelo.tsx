@@ -11,6 +11,7 @@ import {
 } from '../services/duelo';
 import type { ConviteResponse, DueloResponse } from '../types';
 import DueloModal from '../components/duelo/DueloModal';
+import { Link } from 'react-router-dom';
 
 export default function Duelo() {
   const { user } = useAuth();
@@ -88,6 +89,17 @@ export default function Duelo() {
           <p className="text-sm mt-1.5" style={{ color: '#999' }}>
             Desafie um colega e teste seus conhecimentos em tempo real.
           </p>
+          {/* No bloco do cabeçalho, após o <p> de descrição: */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm mt-1.5" style={{ color: '#999' }}>...</p>
+              <Link
+                to="/duelo/historico"
+                className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-70"
+                style={{ color: '#999' }}
+              >
+                Ver histórico →
+              </Link>
+            </div>
         </div>
 
         {/* Card — Enviar convite */}
@@ -283,4 +295,3 @@ export default function Duelo() {
     </Layout>
   );
 }
-    

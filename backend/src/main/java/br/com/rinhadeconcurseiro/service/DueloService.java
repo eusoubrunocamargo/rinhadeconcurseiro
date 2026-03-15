@@ -3,11 +3,9 @@ package br.com.rinhadeconcurseiro.service;
 import br.com.rinhadeconcurseiro.dto.request.IniciarDueloRequest;
 import br.com.rinhadeconcurseiro.dto.response.DueloQuestaoResponse;
 import br.com.rinhadeconcurseiro.dto.response.DueloResponse;
+import br.com.rinhadeconcurseiro.dto.response.DueloResultadoQuestaoResponse;
 import br.com.rinhadeconcurseiro.dto.websocket.EventoDueloMessage;
-import br.com.rinhadeconcurseiro.entity.Duelo;
-import br.com.rinhadeconcurseiro.entity.DueloQuestao;
-import br.com.rinhadeconcurseiro.entity.Questao;
-import br.com.rinhadeconcurseiro.entity.Usuario;
+import br.com.rinhadeconcurseiro.entity.*;
 import br.com.rinhadeconcurseiro.enums.EventoDueloTipo;
 import br.com.rinhadeconcurseiro.enums.StatusDuelo;
 import br.com.rinhadeconcurseiro.exception.DueloException;
@@ -15,6 +13,7 @@ import br.com.rinhadeconcurseiro.exception.ResourceNotFoundException;
 import br.com.rinhadeconcurseiro.mapper.DueloMapper;
 import br.com.rinhadeconcurseiro.repository.DueloQuestaoRepository;
 import br.com.rinhadeconcurseiro.repository.DueloRepository;
+import br.com.rinhadeconcurseiro.repository.DueloRespostaRepository;
 import br.com.rinhadeconcurseiro.repository.QuestaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class DueloService {
     private final QuestaoRepository questaoRepository;
     private final DueloMapper dueloMapper;
     private final SimpMessagingTemplate messagingTemplate; // novo
+    private final DueloRespostaRepository dueloRespostaRepository;
 
     @Transactional
     public DueloResponse iniciar(Long dueloId, Usuario solicitante, IniciarDueloRequest request) {
@@ -161,4 +163,45 @@ public class DueloService {
         );
 
     }
+
+    @Transactional(readOnly = true)
+    public List<DueloResultadoQuestaoResponse> listarResultadoQuestoes(Long dueloId, Usuario usuario){
+
+        Duelo duelo = dueloRepository.findById(dueloId)
+                .orElseThrow(()-> new ResourceNotFoundException("Duelo não encontrado."));
+
+        boolean ehParticipante = duelo.getHost().getId().equals(usuario.getId())
+                || duelo.getDesafiado().getId().equals(usuario.getId());
+
+        if(!ehParticipante)
+            throw new DueloException("Você não tem acesso a este duelo.");
+
+        if(duelo.getStatus() != StatusDuelo.FINALIZADO)
+            throw new DueloException("Resultado disponível apenas para duelos finalizados.");
+
+        List<DueloQuestao> questoes = dueloQuestaoRepository.findByDueloIdWithQuestaoOrderByOrdem(dueloId);
+
+        List<Long> questaoIds = questoes.stream().map(DueloQuestao::getId).toList();
+
+        //batch load all user answers
+        Map<Long, DueloResposta> mapaRespostas =
+                dueloRespostaRepository.findByDueloQuestaoIdsAndUsuarioId(questaoIds, usuario.getId())
+                        .stream().collect(Collectors.toMap(
+                                r -> r.getDueloQuestao().getId(),
+                                r -> r
+                        ));
+        return questoes.stream().map(dq -> {
+            DueloResposta resp = mapaRespostas.get(dq.getId());
+            return new DueloResultadoQuestaoResponse(
+                    dq.getOrdem(),
+                    dq.getQuestao().getEnunciado(),
+                    dq.getQuestao().getMateria().getNome(),
+                    dq.getQuestao().getAssunto() != null ? dq.getQuestao().getAssunto().getNome() : null,
+                    dq.getQuestao().getGabarito().name(),
+                    resp != null ? resp.getResposta() : null,
+                    resp != null && Boolean.TRUE.equals(resp.getAcertou())
+            );
+        }).toList();
+    }
+
 }

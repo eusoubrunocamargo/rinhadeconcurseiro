@@ -14,10 +14,11 @@ import RankingPage from './pages/RankingPage';
 import OAuthCallback from './pages/OAuthCallback';
 import Estatisticas from './pages/Estatisticas';
 import Duelo from './pages/Duelo';
+import DueloHistorico from './pages/DueloHistorico';
 import DueloConfigurar from './pages/DueloConfigurar';
 
 const DueloLive = () => <div>Live em breve</div>
-const DueloHistorico = () => <div>Histórico em breve</div>
+// const DueloHistorico = () => <div>Histórico em breve</div>
 
 export default function AppRoutes() {
   return (
@@ -116,11 +117,40 @@ export default function AppRoutes() {
         }
       />
 
-      <Route path="/duelo/configurar/:id" element={<ProtectedRoute><DueloConfigurar /></ProtectedRoute>} />
-      <Route path="/duelo/live/:id" element={<ProtectedRoute><DueloLive /></ProtectedRoute>} />
-      <Route path="/duelo/historico" element={<ProtectedRoute><DueloHistorico /></ProtectedRoute>} />
+      <Route 
+        path="/duelo/configurar/:id" 
+        element={
+          <ProtectedRoute>
+            <DueloConfigurar />
+          </ProtectedRoute>
+        } 
+      />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route 
+        path="/duelo/live/:id" 
+        element={
+          <ProtectedRoute>
+            <DueloLive />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/duelo/historico" 
+        element={
+          <ProtectedRoute>
+            <DueloHistorico />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="*" 
+        element={
+          <Navigate to="/" replace />
+        } 
+      />
+      
     </Routes>
   );
 }
