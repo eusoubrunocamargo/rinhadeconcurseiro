@@ -24,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +47,8 @@ class DueloServiceTest {
     private QuestaoRepository questaoRepository;
     @Mock
     private DueloMapper dueloMapper;
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @InjectMocks
     private DueloService dueloService;
@@ -72,7 +75,6 @@ class DueloServiceTest {
                 .googleId("google-bruno")
                 .build();
 
-        //duelo no estado inicial correto
         dueloEmConfiguracao = Duelo.builder()
                 .id(10L)
                 .host(host)
@@ -86,7 +88,6 @@ class DueloServiceTest {
                 .build();
     }
 
-    //método utilitário para gerar questões fictícias com o tamanho solicitado
     private List<Questao> gerarQuestoes(int quantidade) {
         return java.util.stream.IntStream.rangeClosed(1, quantidade)
                 .mapToObj(i -> Questao.builder()
@@ -105,28 +106,23 @@ class DueloServiceTest {
         @Test
         @DisplayName("Deve iniciar o duelo com filtro por MATERIA e persistir as questões em ordem")
         void deveIniciarDueloComFiltroMateria() {
-            // Arrange
             IniciarDueloRequest request = new IniciarDueloRequest(10, "MATERIA", 5L);
             List<Questao> questoesSorteadas = gerarQuestoes(10);
 
             when(dueloRepository.findById(10L)).thenReturn(Optional.of(dueloEmConfiguracao));
             when(questaoRepository.sortearPorMateria(eq(5L), any(Pageable.class)))
                     .thenReturn(questoesSorteadas);
+            // fix: save precisa retornar a própria entidade para o assert não explodir
+            when(dueloQuestaoRepository.save(any(DueloQuestao.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
             when(dueloRepository.save(any(Duelo.class))).thenReturn(dueloEmConfiguracao);
             when(dueloMapper.toDueloResponse(any(Duelo.class))).thenReturn(dueloResponseMock);
 
-            // Act
             DueloResponse response = dueloService.iniciar(10L, host, request);
 
-            // Assert — verificamos o resultado final
             assertThat(response.status()).isEqualTo(StatusDuelo.EM_ANDAMENTO);
 
-            // Verificamos que exatamente 10 DueloQuestao foram persistidos.
-            // O verify com times(10) confirma que o save foi chamado uma vez
-            // por questão — nem mais, nem menos.
             verify(dueloQuestaoRepository, times(10)).save(any(DueloQuestao.class));
-
-            // Verificamos que a query correta foi chamada — MATERIA, não ASSUNTO.
             verify(questaoRepository).sortearPorMateria(eq(5L), any(Pageable.class));
             verify(questaoRepository, never()).sortearPorAssunto(any(), any());
         }
@@ -134,15 +130,15 @@ class DueloServiceTest {
         @Test
         @DisplayName("Deve iniciar o duelo com filtro por ASSUNTO e usar a query correta")
         void deveIniciarDueloComFiltroAssunto() {
-            // Este teste é separado do anterior porque verifica um caminho
-            // de código diferente dentro do switch — o "ASSUNTO" delega para
-            // sortearPorAssunto(), e queremos confirmar explicitamente isso.
             IniciarDueloRequest request = new IniciarDueloRequest(10, "ASSUNTO", 99L);
             List<Questao> questoesSorteadas = gerarQuestoes(10);
 
             when(dueloRepository.findById(10L)).thenReturn(Optional.of(dueloEmConfiguracao));
             when(questaoRepository.sortearPorAssunto(eq(99L), any(Pageable.class)))
                     .thenReturn(questoesSorteadas);
+            // fix: save precisa retornar a própria entidade para o assert não explodir
+            when(dueloQuestaoRepository.save(any(DueloQuestao.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
             when(dueloRepository.save(any(Duelo.class))).thenReturn(dueloEmConfiguracao);
             when(dueloMapper.toDueloResponse(any(Duelo.class))).thenReturn(dueloResponseMock);
 
@@ -155,32 +151,27 @@ class DueloServiceTest {
         @Test
         @DisplayName("Deve persistir as DueloQuestao com ordem sequencial começando em 1")
         void devePersistirQuestoesComOrdemSequencial() {
-            // Este teste vai além de "foi chamado 10 vezes" — ele inspeciona
-            // o conteúdo de cada objeto salvo para confirmar que a ordem
-            // foi atribuída corretamente: 1, 2, 3... e não 0, 1, 2.
             IniciarDueloRequest request = new IniciarDueloRequest(10, "MATERIA", 5L);
             List<Questao> questoesSorteadas = gerarQuestoes(10);
 
             when(dueloRepository.findById(10L)).thenReturn(Optional.of(dueloEmConfiguracao));
             when(questaoRepository.sortearPorMateria(eq(5L), any(Pageable.class)))
                     .thenReturn(questoesSorteadas);
+            // fix: save precisa retornar a própria entidade para o assert não explodir
+            when(dueloQuestaoRepository.save(any(DueloQuestao.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
             when(dueloRepository.save(any(Duelo.class))).thenReturn(dueloEmConfiguracao);
             when(dueloMapper.toDueloResponse(any(Duelo.class))).thenReturn(dueloResponseMock);
 
             dueloService.iniciar(10L, host, request);
 
-            // O ArgumentCaptor captura todos os objetos passados ao save(),
-            // permitindo inspecionar os valores de cada chamada individualmente.
             ArgumentCaptor<DueloQuestao> captor = ArgumentCaptor.forClass(DueloQuestao.class);
             verify(dueloQuestaoRepository, times(10)).save(captor.capture());
 
             List<DueloQuestao> capturadas = captor.getAllValues();
 
-            // A primeira questão deve ter ordem 1, não 0
             assertThat(capturadas.get(0).getOrdem()).isEqualTo(1);
-            // A última questão deve ter ordem 10
             assertThat(capturadas.get(9).getOrdem()).isEqualTo(10);
-            // Verificamos que as ordens são sequenciais sem lacunas
             for (int i = 0; i < capturadas.size(); i++) {
                 assertThat(capturadas.get(i).getOrdem()).isEqualTo(i + 1);
             }
@@ -196,7 +187,6 @@ class DueloServiceTest {
             assertThatThrownBy(() -> dueloService.iniciar(99L, host, request))
                     .isInstanceOf(ResourceNotFoundException.class);
 
-            // Nenhuma query de questões deve acontecer se o duelo não existe
             verifyNoInteractions(questaoRepository, dueloQuestaoRepository);
         }
 
@@ -207,7 +197,6 @@ class DueloServiceTest {
 
             when(dueloRepository.findById(10L)).thenReturn(Optional.of(dueloEmConfiguracao));
 
-            // Bruno não é o host — apenas Alice pode iniciar este duelo.
             assertThatThrownBy(() -> dueloService.iniciar(10L, desafiado, request))
                     .isInstanceOf(DueloException.class)
                     .hasMessageContaining("host");
@@ -220,12 +209,11 @@ class DueloServiceTest {
         void deveLancarExcecaoQuandoStatusInvalido() {
             IniciarDueloRequest request = new IniciarDueloRequest(10, "MATERIA", 5L);
 
-            // Simulamos um duelo que já foi iniciado anteriormente
             Duelo dueloJaIniciado = Duelo.builder()
                     .id(10L)
                     .host(host)
                     .desafiado(desafiado)
-                    .status(StatusDuelo.EM_ANDAMENTO) // não é CONFIGURANDO
+                    .status(StatusDuelo.EM_ANDAMENTO)
                     .build();
 
             when(dueloRepository.findById(10L)).thenReturn(Optional.of(dueloJaIniciado));
@@ -240,21 +228,17 @@ class DueloServiceTest {
         @Test
         @DisplayName("Deve lançar exceção quando não há questões suficientes no banco")
         void deveLancarExcecaoQuandoQuestoesInsuficientes() {
-            // O host pediu 10 questões, mas o banco só tem 4 disponíveis
-            // para aquela matéria. O duelo não deve ser iniciado.
             IniciarDueloRequest request = new IniciarDueloRequest(10, "MATERIA", 5L);
 
             when(dueloRepository.findById(10L)).thenReturn(Optional.of(dueloEmConfiguracao));
             when(questaoRepository.sortearPorMateria(eq(5L), any(Pageable.class)))
-                    .thenReturn(gerarQuestoes(4)); // apenas 4 disponíveis
+                    .thenReturn(gerarQuestoes(4));
 
             assertThatThrownBy(() -> dueloService.iniciar(10L, host, request))
                     .isInstanceOf(DueloException.class)
                     .hasMessageContaining("Encontradas: 4")
                     .hasMessageContaining("necessárias: 10");
 
-            // Nenhuma DueloQuestao deve ter sido salva — a transação deve
-            // ser completamente revertida sem efeitos colaterais no banco.
             verifyNoInteractions(dueloQuestaoRepository);
         }
 
@@ -271,6 +255,5 @@ class DueloServiceTest {
 
             verifyNoInteractions(dueloQuestaoRepository);
         }
-
     }
 }

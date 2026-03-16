@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -37,6 +38,7 @@ class ConviteServiceTest {
     @Mock private DueloRepository dueloRepository;
     @Mock private UsuarioRepository usuarioRepository;
     @Mock private DueloMapper dueloMapper;
+    @Mock private SimpMessagingTemplate messagingTemplate;
 
     @InjectMocks
     private ConviteService conviteService;

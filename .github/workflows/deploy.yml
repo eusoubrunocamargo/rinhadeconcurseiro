@@ -32,22 +32,22 @@ jobs:
           GOOGLE_CLIENT_ID: fake-id
           GOOGLE_CLIENT_SECRET: fake-secret
 
-  deploy:
-    name: Deploy Railway
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy
-        run: |
-          cd backend
-          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }}
-          railway up --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+#  deploy:
+#    name: Deploy Railway
+#    needs: test
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout código
+#        uses: actions/checkout@v4
+#
+#      - name: Install Railway CLI
+#        run: npm install -g @railway/cli
+#
+#      - name: Deploy
+#        run: |
+#          cd backend
+#          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }}
+#          railway up --detach
+#        env:
+#          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

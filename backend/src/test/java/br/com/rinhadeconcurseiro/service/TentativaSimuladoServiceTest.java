@@ -130,28 +130,6 @@ class TentativaSimuladoServiceTest {
             verify(tentativaRepository).save(any(TentativaSimulado.class));
         }
 
-//        @Test
-//        @DisplayName("Deve lançar exceção se já existe tentativa em andamento")
-//        void deveLancarExcecaoSeJaExisteTentativaEmAndamento() {
-//            // Arrange
-//            TentativaSimulado tentativaExistente = TentativaSimulado.builder()
-//                    .id(50L)
-//                    .usuario(usuario)
-//                    .simulado(simulado)
-//                    .finalizada(false)
-//                    .build();
-//
-//            when(tentativaRepository.findByUsuarioIdAndSimuladoIdAndFinalizadaFalse(1L, 1L))
-//                    .thenReturn(Optional.of(tentativaExistente));
-//
-//            // Act & Assert
-//            assertThatThrownBy(() -> service.iniciar(1L, 1L))
-//                    .isInstanceOf(IllegalStateException.class)
-//                    .hasMessageContaining("Já existe uma tentativa em andamento");
-//
-//            verify(tentativaRepository, never()).save(any());
-//        }
-
         @Test
         @DisplayName("Deve lançar exceção se usuário não encontrado")
         void deveLancarExcecaoSeUsuarioNaoEncontrado() {
@@ -349,7 +327,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -373,7 +351,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -396,7 +374,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -417,7 +395,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -441,7 +419,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -462,7 +440,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -483,7 +461,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -506,7 +484,7 @@ class TentativaSimuladoServiceTest {
 
             when(tentativaRepository.findByIdAndUsuarioIdWithLock(1L, 1L))
                     .thenReturn(Optional.of(tentativa));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L);
@@ -574,7 +552,7 @@ class TentativaSimuladoServiceTest {
                     .thenReturn(List.of(simuladoQuestao));
             when(respostaRepository.findDetalhadasByTentativaId(1L))
                     .thenReturn(List.of(rq));
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act
             TentativaDetalheResponse response = service.finalizar(1L, 1L, respostasFinais);
@@ -585,7 +563,7 @@ class TentativaSimuladoServiceTest {
             // Assert: tentativa finalizada com a resposta classificada
             assertThat(response.finalizada()).isTrue();
             assertThat(tentativa.getFinalizada()).isTrue();
-            verify(tentativaRepository).save(tentativa);
+            verify(tentativaRepository).flush();
         }
 
         @SuppressWarnings({"null", "unchecked"})
@@ -601,7 +579,7 @@ class TentativaSimuladoServiceTest {
                     .thenReturn(Optional.of(tentativa));
             when(respostaRepository.findDetalhadasByTentativaId(1L))
                     .thenReturn(List.of());
-            when(tentativaRepository.save(any())).thenReturn(tentativa);
+            //when(tentativaRepository.save(any())).thenReturn(tentativa);
 
             // Act — sem respostas finais (comportamento legado)
             TentativaDetalheResponse response = service.finalizar(1L, 1L, null);
