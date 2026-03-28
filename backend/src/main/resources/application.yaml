@@ -40,8 +40,8 @@ spring:
 logging:
   level:
     root: ${ROOT_LOG_LEVEL:INFO}
-    org.springframework.security: ${SPRING_SECURITY_LOG_LEVEL:WARN}
-    org.springframework.security.oauth2: ${SPRING_SECURITY_OAUTH2_LOG_LEVEL:WARN}
+    org.springframework.security: ${SPRING_SECURITY_LOG_LEVEL:DEBUG}
+    org.springframework.security.oauth2: ${SPRING_SECURITY_OAUTH2_LOG_LEVEL:DEBUG}
     org.springframework.web.client: ${SPRING_WEB_CLIENT_LOG_LEVEL:WARN}
     org.hibernate.SQL: ${HIBERNATE_SQL_LOG_LEVEL:WARN}
     org.hibernate.type.descriptor.sql: ${HIBERNATE_BINDER_LOG_LEVEL:WARN}
