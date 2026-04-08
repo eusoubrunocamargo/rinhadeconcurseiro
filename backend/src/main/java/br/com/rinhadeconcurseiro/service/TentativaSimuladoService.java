@@ -22,12 +22,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service responsável pelo ciclo de vida das tentativas de resolução de simulados.
+ * Gerencia inicialização, salvamento em lote de respostas, finalização com cálculo
+ * de pontuação (estilo CEBRASPE) e classificação de respostas por nível de confiança.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TentativaSimuladoService {
 
     // language=SQL
+    // Query nativa (PostgreSQL) para inserção idempotente de respostas.
+    // Utiliza ON CONFLICT para garantir alta performance e evitar erros de duplicidade em concorrência.
     private static final String UPSERT_RESPOSTA_SQL = """
             INSERT INTO resposta_questao (
                 id_tentativa, id_simulado_questao, resposta, confianca, tipo_erro, updated_at
@@ -51,6 +58,14 @@ public class TentativaSimuladoService {
     // Iniciar tentativa
     //===========
 
+    /**
+     * Inicia uma nova tentativa ou retoma uma já existente.
+     *
+     * @param simuladoId ID do simulado a ser resolvido.
+     * @param usuarioId  ID do usuário.
+     * @param refazer    Se true, apaga a tentativa não finalizada existente e cria uma nova.
+     * @return DTO contendo os dados básicos da tentativa iniciada/retomada.
+     */
     @Transactional
     public TentativaIniciadaResponse iniciar(Long simuladoId, Long usuarioId, boolean refazer) {
         // Verificar se já existe tentativa em andamento
@@ -110,7 +125,9 @@ public class TentativaSimuladoService {
         );
     }
 
-    // Sobrecarga para manter compatibilidade
+    /**
+     * Sobrecarga para manter compatibilidade com implementações que não exigem a flag 'refazer'.
+     */
     @Transactional
     public TentativaIniciadaResponse iniciar(Long simuladoId, Long usuarioId) {
         return iniciar(simuladoId, usuarioId, false);
@@ -120,6 +137,14 @@ public class TentativaSimuladoService {
     // Salvar Respostas
     //===========
 
+    /**
+     * Salva as respostas parciais do usuário (auto-save durante a resolução).
+     * Utiliza lock otimista/pessimista (dependendo da implementação no repository) para evitar race conditions.
+     *
+     * @param tentativaId ID da tentativa.
+     * @param usuarioId   ID do usuário.
+     * @param request     DTO contendo a lista de respostas a serem salvas.
+     */
     @Transactional
     public void salvarRespostas(Long tentativaId, Long usuarioId, SalvarRespostasRequest request) {
         TentativaSimulado tentativa = getTentativaDoUsuarioComLock(tentativaId, usuarioId);
@@ -163,7 +188,7 @@ public class TentativaSimuladoService {
 
         List<RespostaQuestao> respostas = respostaRepository.findDetalhadasByTentativaId(tentativaId);
 
-        //classificar cada resposta
+        // Classifica e contabiliza os acertos, erros e em branco
         int acertos = 0;
         int erros = 0;
         int emBranco = 0;
@@ -180,7 +205,7 @@ public class TentativaSimuladoService {
             }
         }
 
-        //atualizar métricas da tentativa
+        // Atualizar métricas da tentativa (Método CEBRASPE: 1 acerto anula 1 erro)
         tentativa.setAcertos(acertos);
         tentativa.setErros(erros);
         tentativa.setEmBranco(emBranco);
@@ -206,6 +231,10 @@ public class TentativaSimuladoService {
     //===========
     // Consultas
     //===========
+    
+    /**
+     * Lista todas as tentativas ativas (não finalizadas) de um usuário.
+     */
     @Transactional(readOnly = true)
     public List<TentativaResumoResponse> listarEmAndamento(Long usuarioId) {
         return tentativaRepository.findByUsuarioIdAndFinalizadaFalseOrderByDataInicioDesc(usuarioId)
@@ -214,6 +243,9 @@ public class TentativaSimuladoService {
                 .toList();
     }
 
+    /**
+     * Lista os últimos resultados finalizados de cada simulado feito pelo usuário.
+     */
     @Transactional(readOnly = true)
     public List<TentativaResumoResponse> listarFinalizados(Long usuarioId) {
         // Buscar apenas a última tentativa finalizada de cada simulado
@@ -223,6 +255,9 @@ public class TentativaSimuladoService {
                 .toList();
     }
 
+    /**
+     * Busca os detalhes completos de uma tentativa, incluindo as respostas dadas.
+     */
     @Transactional(readOnly = true)
     public TentativaDetalheResponse buscarPorId(Long tentativaId, Long usuarioId) {
         TentativaSimulado tentativa = getTentativaDoUsuario(tentativaId, usuarioId);
@@ -230,6 +265,11 @@ public class TentativaSimuladoService {
         return toDetalheResponse(tentativa, respostas);
     }
 
+    /**
+     * Agrega as estatísticas do usuário para exibir no painel de progresso geral.
+     * Inclui quantidade de simulados, média, e o ranking (top 5) de piores e melhores assuntos
+     * segmentados por caderno de revisão.
+     */
     @Transactional(readOnly = true)
     public MeuProgressoResponse obterProgresso(Long usuarioId) {
         int emAndamento = tentativaRepository
@@ -260,6 +300,10 @@ public class TentativaSimuladoService {
     // Método central de agregação — usado tanto pelo dashboard (limit=5)
     // quanto pelo endpoint /resumo do CadernoView (limit=Integer.MAX_VALUE):
 
+    /**
+     * Retorna a lista de assuntos e as respectivas estatísticas de desempenho
+     * para um determinado caderno de revisão.
+     */
     @Transactional(readOnly = true)
     public List<ResumoAssuntoResponse> resumoAssuntosPorCaderno(
             Long usuarioId, Caderno caderno, int limit) {
@@ -286,6 +330,9 @@ public class TentativaSimuladoService {
                 .toList();
     }
 
+    /**
+     * Contabiliza quantas questões o usuário possui distribuídas em cada caderno de revisão.
+     */
     @Transactional(readOnly = true)
     public CadernoResumoResponse obterResumoCadernos(Long usuarioId) {
         List<Object[]> counts = respostaRepository.countByUsuarioIdGroupByCaderno(usuarioId);
@@ -314,6 +361,11 @@ public class TentativaSimuladoService {
         );
     }
 
+    /**
+     * Retorna os detalhes e a lista de questões associadas a um caderno específico do usuário.
+     * O texto do título e descrição variam conforme o caderno solicitado
+     * (Vermelho: Crítico, Amarelo: Reforço, Verde: Domínio).
+     */
     @Transactional(readOnly = true)
     public CadernoDetalheResponse obterCaderno(Long usuarioId, Caderno caderno) {
         List<RespostaQuestao> respostas = respostaRepository.findByUsuarioIdAndCaderno(usuarioId, caderno);
@@ -345,7 +397,10 @@ public class TentativaSimuladoService {
 
     }
 
-    // Converte Object[] → EstatisticaAssuntoResponse e calcula tier
+    /**
+     * Agrega as estatísticas globais do usuário em todos os simulados, mapeando o aproveitamento
+     * por assunto e definindo o "Tier" de proficiência (DOMINIO, ATENCAO ou CRITICO).
+     */
     @Transactional(readOnly = true)
     public List<EstatisticaAssuntoResponse> estatisticasGlobaisPorAssunto(Long usuarioId) {
 
@@ -359,6 +414,7 @@ public class TentativaSimuladoService {
                     double pct = total > 0 ? (acertos * 100.0) / total : 0.0;
                     double pctArredondado = Math.round(pct * 100.0) / 100.0;
 
+                    // Definição da faixa de proficiência do usuário para o assunto
                     String tier = pctArredondado >= 70 ? "DOMINIO"
                             : pctArredondado >= 50 ? "ATENCAO"
                             : "CRITICO";
@@ -377,6 +433,9 @@ public class TentativaSimuladoService {
                 .toList();
     }
 
+    /**
+     * Obtém as estatísticas gerais de performance de TODOS os usuários em um determinado simulado.
+     */
     @Transactional(readOnly = true)
     public SimuladoStatsResponse obterStatsPorSimulado(Long simuladoId) {
         int total = (int) tentativaRepository
@@ -393,6 +452,10 @@ public class TentativaSimuladoService {
     //===========
     // Lógica de Classificação
     //===========
+    /**
+     * Algoritmo principal de aprendizado (Spaced Repetition / Categorização).
+     * Direciona as questões para o caderno correto baseado na resposta do usuário, gabarito, confiança e tipo de erro.
+     */
     private void classificarResposta(RespostaQuestao resposta) {
         RespostaTipo respostaUsuario = resposta.getResposta();
         RespostaTipo gabarito = resposta.getSimuladoQuestao().getQuestao().getGabarito();
@@ -410,24 +473,30 @@ public class TentativaSimuladoService {
 
         if (acertou) {
             if (confianca == NivelConfianca.CERTEZA) {
+                // Domínio sólido do assunto
                 resposta.setTipoResultado(TipoResultado.ACERTO_CONSCIENTE);
                 resposta.setCaderno(Caderno.VERDE);
             } else if (confianca == NivelConfianca.DUVIDA) {
+                // Acertou mas tem dúvida, precisa de revisão pontual
                 resposta.setTipoResultado(TipoResultado.ACERTO_COM_DUVIDA);
                 resposta.setCaderno(Caderno.AMARELO);
             } else {
+                // Chute certeiro: trata como risco, precisa ser reforçado
                 resposta.setTipoResultado(TipoResultado.ACERTO_POR_CHUTE);
                 resposta.setCaderno(Caderno.AMARELO);
             }
         } else {
             if (tipoErro == TipoErro.CONTEUDO) {
+                // Falta de base teórica no assunto
                 resposta.setTipoResultado(TipoResultado.ERRO_CONTEUDO);
                 resposta.setCaderno(Caderno.VERMELHO);
             } else if (tipoErro == TipoErro.INTERPRETACAO) {
+                // Erro de interpretação de texto: se foi com dúvida = amarelo, se tinha certeza = vermelho
                 resposta.setTipoResultado(TipoResultado.ERRO_INTERPRETACAO);
                 resposta.setCaderno(confianca == NivelConfianca.DUVIDA ?
                         Caderno.AMARELO : Caderno.VERMELHO);
             } else {
+                // Bobeira/Desatenção: revisão amena
                 resposta.setTipoResultado(TipoResultado.ERRO_DISTRACAO);
                 resposta.setCaderno(Caderno.AMARELO);
             }
@@ -497,6 +566,9 @@ public class TentativaSimuladoService {
         return batch.size();
     }
 
+    /**
+     * Converte a entidade de Tentativa para a resposta em formato resumido.
+     */
     private TentativaResumoResponse toResumoResponse(TentativaSimulado t) {
         Simulado s = t.getSimulado();
 
@@ -509,7 +581,8 @@ public class TentativaSimuladoService {
 
         if (t.getFinalizada() && t.getPontuacao() != null) {
             // Aproveitamento CEBRASPE: pontuação líquida / total questões
-            percentual = (t.getPontuacao() * 100.0) / s.getTotalQuestoes();
+            // Proteção contra divisão por zero, caso o simulado não tenha questões computadas
+            percentual = s.getTotalQuestoes() > 0 ? (t.getPontuacao() * 100.0) / s.getTotalQuestoes() : 0.0;
         }
 
         return new TentativaResumoResponse(
@@ -534,6 +607,9 @@ public class TentativaSimuladoService {
         return toDetalheResponse(t, respostaRepository.findDetalhadasByTentativaId(t.getId()));
     }
 
+    /**
+     * Converte a entidade de Tentativa para a resposta detalhada contendo todas as questões e status dos cadernos.
+     */
     private TentativaDetalheResponse toDetalheResponse(TentativaSimulado t, List<RespostaQuestao> respostasEntidade) {
         Simulado s = t.getSimulado();
 
@@ -548,7 +624,8 @@ public class TentativaSimuladoService {
         Double percentual = null;
         if (t.getFinalizada() && t.getPontuacao() != null) {
             // Aproveitamento CEBRASPE: pontuação líquida / total questões
-            percentual = (t.getPontuacao() * 100.0) / s.getTotalQuestoes();
+            // Proteção contra divisão por zero
+            percentual = s.getTotalQuestoes() > 0 ? (t.getPontuacao() * 100.0) / s.getTotalQuestoes() : 0.0;
         }
 
         return new TentativaDetalheResponse(
@@ -572,6 +649,9 @@ public class TentativaSimuladoService {
         );
     }
 
+    /**
+     * Mapeador base para expor os dados específicos de uma resposta a uma questão dentro da tentativa.
+     */
     private RespostaDetalheResponse toRespostaDetalheResponse(RespostaQuestao r) {
         SimuladoQuestao sq = r.getSimuladoQuestao();
         Questao q = sq.getQuestao();
