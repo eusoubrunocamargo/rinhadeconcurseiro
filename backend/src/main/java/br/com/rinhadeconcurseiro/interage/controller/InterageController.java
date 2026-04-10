@@ -73,12 +73,16 @@ public class InterageController {
         List<FaseResumoDto> fases = faseRepo
                 .findAllByMundoIdAndAtivoTrueOrderByOrdemNoMundoAsc(mundoId)
                 .stream()
-                .map(f -> new FaseResumoDto(
-                        f.getId(),
-                        f.getNumero(),
-                        f.getNome(),
-                        f.getOrdemNoMundo(),
-                        progressoService.obterPontoRetomada(usuario, f.getId())))
+                .map(f -> {
+                    PontoRetomada etapa = progressoService.obterPontoRetomada(usuario, f.getId());
+                    boolean desbloqueada = progressoFaseRepo
+                            .findByUsuarioIdAndFaseId(usuario.getId(), f.getId())
+                            .map(ProgressoFase::getDesbloqueada)
+                            .orElse(f.getOrdemNoMundo() == 1 && f.getMundo().getNumero() == 1);
+                    return new FaseResumoDto(
+                            f.getId(), f.getNumero(), f.getNome(),
+                            f.getOrdemNoMundo(), etapa, desbloqueada);
+                })
                 .toList();
 
         return ResponseEntity.ok(fases);
@@ -239,5 +243,7 @@ public class InterageController {
             Short numero,
             String nome,
             Short ordemNoMundo,
-            PontoRetomada etapa) {}
+            PontoRetomada etapa,
+            boolean desbloqueada
+            ) {}
 }
