@@ -8,12 +8,13 @@ interface LayoutProps {
 }
 
 const navItems = [
-  { to: '/dashboard',         icon: 'dashboard',    label: 'Dashboard'        },
-  { to: '/simulados',         icon: 'edit_note',    label: 'Simulados'        },
-  { to: '/ranking',           icon: 'leaderboard',  label: 'Rankings'         },
-  { to: '/cadernos/vermelho', icon: 'menu_book',    label: 'Caderno de Erros' },
-  { to: '/estatisticas',      icon: 'query_stats',  label: 'Estatísticas'     },
-  { to: '/duelo',             icon: 'swords',       label: 'Duelos'           },
+  { to: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+  { to: '/simulados', icon: 'edit_note', label: 'Simulados' },
+  { to: '/ranking', icon: 'leaderboard', label: 'Rankings' },
+  { to: '/cadernos/vermelho', icon: 'menu_book', label: 'Caderno de Erros' },
+  { to: '/estatisticas', icon: 'query_stats', label: 'Estatísticas' },
+  { to: '/duelo', icon: 'swords', label: 'Duelos' },
+  { to: '/interage', icon: 'sports_esports', label: 'Interage' },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -46,8 +47,8 @@ export default function Layout({ children }: LayoutProps) {
           {user?.fotoUrl
             ? <img src={user.fotoUrl} alt={user.nome} className="w-full h-full object-cover rounded-full" />
             : <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-2xl font-black text-gray-400">
-                {user?.nome?.[0]?.toUpperCase() ?? '?'}
-              </div>
+              {user?.nome?.[0]?.toUpperCase() ?? '?'}
+            </div>
           }
         </div>
         <h2 className="font-bold text-dark-text text-sm">{user?.apelido || user?.nome}</h2>
@@ -62,10 +63,9 @@ export default function Layout({ children }: LayoutProps) {
             to={to}
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-bold ${
-                isActive
-                  ? 'bg-red-50 text-accent'
-                  : 'text-subtle-text hover:bg-gray-100 hover:text-dark-text'
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-bold ${isActive
+                ? 'bg-red-50 text-accent'
+                : 'text-subtle-text hover:bg-gray-100 hover:text-dark-text'
               }`
             }
           >

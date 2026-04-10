@@ -17,6 +17,13 @@ import Duelo from './pages/Duelo';
 import DueloHistorico from './pages/DueloHistorico';
 import DueloConfigurar from './pages/DueloConfigurar';
 
+// interage
+
+import MapaMundos from './interage/pages/MapaMundos';
+import MapaFases from './interage/pages/MapaFases';
+import SessaoFase from './interage/pages/SessaoFase';
+
+
 const DueloLive = () => <div>Live em breve</div>
 // const DueloHistorico = () => <div>Histórico em breve</div>
 
@@ -142,6 +149,33 @@ export default function AppRoutes() {
             <DueloHistorico />
           </ProtectedRoute>
         } 
+      />
+
+      <Route 
+        path='/interage'
+        element={
+          <ProtectedRoute>
+            <MapaMundos />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route 
+        path='/interage/:mundoId'
+        element={
+          <ProtectedRoute>
+            <MapaFases />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route 
+        path='/interage/:mundoId/:faseId'
+        element={
+          <ProtectedRoute>
+            <SessaoFase />
+          </ProtectedRoute>
+        }
       />
 
       <Route 
