@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import InterageLayout from '../layout/InterageLayout';
@@ -125,9 +125,17 @@ function TelaIntroducao({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [saving,   setSaving]   = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const safeHtml = DOMPurify.sanitize(html);
   const isEmpty  = !html.trim();
+
+  // Se o conteúdo já cabe na tela sem rolar, desbloqueia o botão imediatamente
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || isEmpty) return;
+    if (el.scrollHeight <= el.clientHeight + 56) setScrolled(true);
+  }, [safeHtml, isEmpty]);
 
   async function handleConcluir() {
     setSaving(true);
@@ -146,6 +154,7 @@ function TelaIntroducao({
 
       {/* Corpo */}
       <div
+        ref={scrollRef}
         style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 100px' }}
         onScroll={e => {
           const el = e.currentTarget;
