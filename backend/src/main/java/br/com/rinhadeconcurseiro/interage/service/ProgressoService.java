@@ -86,6 +86,7 @@ public class ProgressoService {
     //checkpoint do desafio
     //******************
 
+    @Transactional
     public ResultadoCheckpoint avaliarCheckpointDesafio(Usuario usuario, Long faseId){
 
         ProgressoFase pf = obterOuCriar(usuario, faseId);
@@ -205,6 +206,7 @@ public class ProgressoService {
     }
 
     private void resetarPratica(Usuario usuario, Long faseId){
+        respostaRepository.deletePraticaByUsuarioIdAndFaseId(usuario.getId(), faseId);
         ProgressoFase pf = obterOuCriar(usuario, faseId);
         pf.setRodada1Concluida(false);
         pf.setRodada2Concluida(false);
