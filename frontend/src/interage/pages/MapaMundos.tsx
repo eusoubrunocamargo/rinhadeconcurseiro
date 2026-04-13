@@ -132,23 +132,31 @@ export default function MapaMundos() {
   return (
     <InterageLayout>
       {/* Header */}
-      <div style={{ padding: '28px 20px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.subtle, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-            Módulo
+      <div style={{ padding: '20px 20px 16px', flexShrink: 0 }}>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', marginBottom: 16 }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 22, color: C.text }}>arrow_back</span>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.subtle, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+              Módulo
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: C.text, lineHeight: 1, margin: 0 }}>
+              Interage
+            </h1>
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: C.text, lineHeight: 1, margin: 0 }}>
-            Interage
-          </h1>
+          <span style={{
+            padding: '3px 9px', borderRadius: 6,
+            background: C.blueBg, color: C.blue,
+            fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+          }}>
+            Língua Portuguesa
+          </span>
         </div>
-        <span style={{
-          padding: '3px 9px', borderRadius: 6,
-          background: C.blueBg, color: C.blue,
-          fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.05em', textTransform: 'uppercase' as const,
-        }}>
-          Língua Portuguesa
-        </span>
       </div>
 
       <div style={{ height: 1, background: C.line, flexShrink: 0 }} />
