@@ -38,6 +38,7 @@ export interface Fase {
   ordemNoMundo: number;
   etapa: PontoRetomada;
   desbloqueada: boolean;
+  scorePct?: number;
 }
 
 export interface Exercicio {

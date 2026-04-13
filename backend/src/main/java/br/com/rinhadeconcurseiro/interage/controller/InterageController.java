@@ -50,12 +50,19 @@ public class InterageController {
                             .findByUsuarioIdAndMundoId(usuario.getId(), m.getId())
                             .map(ProgressoMundo::getDesbloqueado)
                             .orElse(m.getNumero() == 1); // Mundo 1 sempre desbloqueado
+                    long fasesConcluidasCount = progressoFaseRepo
+                            .findAllByUsuarioIdAndFase_Mundo_Id(usuario.getId(), m.getId())
+                            .stream()
+                            .filter(pf -> Boolean.TRUE.equals(pf.getDesafioConcluido()))
+                            .count();
                     return new MundoResumoDto(
                             m.getId(),
                             m.getNumero(),
                             m.getNome(),
                             m.getDescricao(),
-                            desbloqueado);
+                            desbloqueado,
+                            (int) fasesConcluidasCount,
+                            m.getTotalFases());
                 })
                 .toList();
 
@@ -77,13 +84,31 @@ public class InterageController {
                 .map(f -> {
                     PontoRetomada etapa = progressoService.obterPontoRetomada(usuario, f.getId());
                     boolean isPrimeiraFase = f.getOrdemNoMundo() == 1 && f.getMundo().getNumero() == 1;
-                    boolean desbloqueada = isPrimeiraFase || progressoFaseRepo
+                    ProgressoFase pf = progressoFaseRepo
                             .findByUsuarioIdAndFaseId(usuario.getId(), f.getId())
-                            .map(ProgressoFase::getDesbloqueada)
-                            .orElse(false);
+                            .orElse(null);
+                    boolean desbloqueada = isPrimeiraFase ||
+                            (pf != null && Boolean.TRUE.equals(pf.getDesbloqueada()));
+
+                    Integer scorePct = null;
+                    if (pf != null && Boolean.TRUE.equals(pf.getDesafioConcluido())) {
+                        int totalDesafio = exercicioRepo.countByFaseIdAndBlocoAndAtivoTrue(
+                                f.getId(), Exercicio.Bloco.DESAFIO)
+                                + questaoClassificadaRepo.countByFaseIdAndBlocoAndAtivoTrue(
+                                f.getId(), QuestaoClassificada.Bloco.DESAFIO);
+                        int totalQuestoes = 12 + totalDesafio; // pratica sempre 12
+                        short scoreDesafio = pf.getScoreDesafioT1() != null ? pf.getScoreDesafioT1() : 0;
+                        if (pf.getScoreDesafioT2() != null && pf.getScoreDesafioT2() > scoreDesafio)
+                            scoreDesafio = pf.getScoreDesafioT2();
+                        short scorePratica = pf.getScorePratica() != null ? pf.getScorePratica() : 0;
+                        scorePct = totalQuestoes > 0
+                                ? (int) Math.round((scorePratica + scoreDesafio) * 100.0 / totalQuestoes)
+                                : 0;
+                    }
+
                     return new FaseResumoDto(
                             f.getId(), f.getNumero(), f.getNome(),
-                            f.getOrdemNoMundo(), etapa, desbloqueada);
+                            f.getOrdemNoMundo(), etapa, desbloqueada, scorePct);
                 })
                 .toList();
 
@@ -245,7 +270,9 @@ public class InterageController {
             Short numero,
             String nome,
             String descricao,
-            boolean desbloqueado) {}
+            boolean desbloqueado,
+            int fasesConcluidasCount,
+            short totalFases) {}
 
     record FaseResumoDto(
             Long id,
@@ -253,6 +280,6 @@ public class InterageController {
             String nome,
             Short ordemNoMundo,
             PontoRetomada etapa,
-            boolean desbloqueada
-            ) {}
+            boolean desbloqueada,
+            Integer scorePct) {}
 }

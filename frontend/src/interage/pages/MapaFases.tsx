@@ -13,10 +13,9 @@ function statusFase(f: Fase): StatusFase {
   return 'andamento';
 }
 
-function estrelasCount(f: Fase): number {
-  // Backend não retorna estrelas ainda — derivamos do score futuramente
-  // Por ora, fase concluída = 1 estrela mínima
-  return f.etapa === 'CONCLUIDA' ? 1 : 0;
+function scoreLabel(f: Fase): string | null {
+  if (f.etapa !== 'CONCLUIDA' || f.scorePct == null) return null;
+  return `${f.scorePct}%`;
 }
 
 // ── Nodo de fase ──────────────────────────────────────────────────────────────
@@ -27,7 +26,7 @@ function NodoFase({ fase, onClick }: { fase: Fase; onClick: () => void }) {
   const locked = status === 'bloqueada';
   const done = status === 'concluida';
   const active = status === 'andamento';
-  const estrelas = estrelasCount(fase);
+  const score = scoreLabel(fase);
 
   const bg = done   ? C.green
            : active ? C.text
@@ -60,13 +59,11 @@ function NodoFase({ fase, onClick }: { fase: Fase; onClick: () => void }) {
         }
       </button>
 
-      {/* Indicadores de estrela */}
-      {done && (
-        <div style={{ display: 'flex', gap: 3 }}>
-          {[1, 2, 3].map(i => (
-            <div key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: i <= estrelas ? C.gold : C.line }} />
-          ))}
-        </div>
+      {/* Score da fase concluída */}
+      {done && score != null && (
+        <span style={{ fontSize: 10, fontWeight: 700, color: C.gold }}>
+          {score}
+        </span>
       )}
 
       <span style={{ fontSize: 10, fontWeight: 600, color: C.mid, textAlign: 'center', maxWidth: 64, lineHeight: 1.3 }}>
