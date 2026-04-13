@@ -23,14 +23,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InterageController {
 
-    private final SessaoService            sessaoService;
-    private final ProgressoService         progressoService;
-    private final MundoRepository          mundoRepo;
-    private final FaseRepository           faseRepo;
-    private final ExercicioRepository      exercicioRepo;
-    private final RespostaRepository       respostaRepo;
-    private final ProgressoMundoRepository progressoMundoRepo;
-    private final ProgressoFaseRepository  progressoFaseRepo;
+    private final SessaoService                sessaoService;
+    private final ProgressoService             progressoService;
+    private final MundoRepository              mundoRepo;
+    private final FaseRepository               faseRepo;
+    private final ExercicioRepository          exercicioRepo;
+    private final QuestaoClassificadaRepository questaoClassificadaRepo;
+    private final RespostaRepository           respostaRepo;
+    private final ProgressoMundoRepository     progressoMundoRepo;
+    private final ProgressoFaseRepository      progressoFaseRepo;
 
 
     // ------------------------------------------------------------------
@@ -213,8 +214,12 @@ public class InterageController {
                 .map(ProgressoFase::getDesafioTentativas)
                 .orElse((short) 0) + 1);
 
+        // total dinâmico: conta exatamente quantos itens de desafio existem na fase
+        int total = exercicioRepo.countByFaseIdAndBlocoAndAtivoTrue(faseId, Exercicio.Bloco.DESAFIO)
+                  + questaoClassificadaRepo.countByFaseIdAndBlocoAndAtivoTrue(faseId, QuestaoClassificada.Bloco.DESAFIO);
+
         ResultadoCheckpoint resultado =
-                progressoService.avaliarCheckpointDesafio(usuario, faseId);
+                progressoService.avaliarCheckpointDesafio(usuario, faseId, total);
 
         int acertos = respostaRepo.contarAcertosDesafio(
                 usuario.getId(), faseId, tentativa);
@@ -227,7 +232,7 @@ public class InterageController {
         };
 
         return ResponseEntity.ok(
-                new CheckpointResultadoDto(resultado, acertos, 8, mensagem));
+                new CheckpointResultadoDto(resultado, acertos, total, mensagem));
     }
 
     // ------------------------------------------------------------------

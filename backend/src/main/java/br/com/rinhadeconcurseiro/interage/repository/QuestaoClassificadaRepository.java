@@ -11,4 +11,6 @@ extends JpaRepository<QuestaoClassificada, Long> {
             Long faseId,
             QuestaoClassificada.Bloco bloco
     );
+
+    int countByFaseIdAndBlocoAndAtivoTrue(Long faseId, QuestaoClassificada.Bloco bloco);
 }

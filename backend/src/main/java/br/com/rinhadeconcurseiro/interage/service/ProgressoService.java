@@ -21,14 +21,10 @@ import java.time.LocalDateTime;
 public class ProgressoService {
 
     private static final int TOTAL_EXERCICIOS_PRATICA = 12;
-    private static final int TOTAL_EXERCICIOS_DESAFIO = 8;
     private static final double PERCENTUAL_MINIMO = 0.70;
 
     private static final int ACERTOS_MINIMOS_PRATICA =
             (int) Math.ceil(TOTAL_EXERCICIOS_PRATICA * PERCENTUAL_MINIMO);
-
-    private static final int ACERTOS_MINIMOS_DESAFIO =
-            (int) Math.ceil(TOTAL_EXERCICIOS_DESAFIO * PERCENTUAL_MINIMO);
 
     private final ProgressoFaseRepository progressoFaseRepository;
     private final ProgressoMundoRepository progressoMundoRepository;
@@ -87,7 +83,9 @@ public class ProgressoService {
     //******************
 
     @Transactional
-    public ResultadoCheckpoint avaliarCheckpointDesafio(Usuario usuario, Long faseId){
+    public ResultadoCheckpoint avaliarCheckpointDesafio(Usuario usuario, Long faseId, int totalDesafio){
+
+        int acertosMinimos = (int) Math.ceil(totalDesafio * PERCENTUAL_MINIMO);
 
         ProgressoFase pf = obterOuCriar(usuario, faseId);
         short tentativa = (short) (pf.getDesafioTentativas() + 1);
@@ -99,7 +97,7 @@ public class ProgressoService {
         else pf.setScoreDesafioT2((short) acertos);
         pf.setUltimaAtividadeEm(LocalDateTime.now());
 
-        if(acertos >= ACERTOS_MINIMOS_DESAFIO){
+        if(acertos >= acertosMinimos){
             concluirFase(pf, usuario);
             progressoFaseRepository.save(pf);
             return ResultadoCheckpoint.APROVADO;
