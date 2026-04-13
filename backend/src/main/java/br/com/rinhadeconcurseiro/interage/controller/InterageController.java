@@ -76,10 +76,11 @@ public class InterageController {
                 .stream()
                 .map(f -> {
                     PontoRetomada etapa = progressoService.obterPontoRetomada(usuario, f.getId());
-                    boolean desbloqueada = progressoFaseRepo
+                    boolean isPrimeiraFase = f.getOrdemNoMundo() == 1 && f.getMundo().getNumero() == 1;
+                    boolean desbloqueada = isPrimeiraFase || progressoFaseRepo
                             .findByUsuarioIdAndFaseId(usuario.getId(), f.getId())
                             .map(ProgressoFase::getDesbloqueada)
-                            .orElse(f.getOrdemNoMundo() == 1 && f.getMundo().getNumero() == 1);
+                            .orElse(false);
                     return new FaseResumoDto(
                             f.getId(), f.getNumero(), f.getNome(),
                             f.getOrdemNoMundo(), etapa, desbloqueada);
