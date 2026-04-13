@@ -185,10 +185,11 @@ public class InterageController {
             @PathVariable Long faseId,
             @AuthenticationPrincipal Usuario usuario) {
 
+        // lê acertos ANTES do serviço porque resetarPratica apaga as respostas
+        int acertos = respostaRepo.contarAcertosPraticaTotal(usuario.getId(), faseId);
+
         ResultadoCheckpoint resultado =
                 progressoService.avaliarCheckpointPratica(usuario, faseId);
-
-        int acertos = respostaRepo.contarAcertosPraticaTotal(usuario.getId(), faseId);
 
         String mensagem = switch (resultado) {
             case APROVADO          -> "Parabéns! Você avançou para o Desafio.";
@@ -205,13 +206,15 @@ public class InterageController {
             @PathVariable Long faseId,
             @AuthenticationPrincipal Usuario usuario) {
 
-        ResultadoCheckpoint resultado =
-                progressoService.avaliarCheckpointDesafio(usuario, faseId);
-
-        short tentativa = progressoFaseRepo
+        // calcula tentativa ANTES do serviço: após REPROVADO_MUNDO_ZERADO,
+        // resetarFasesPorMundo zera desafioTentativas para 0 e a query retornaria 0
+        short tentativa = (short) (progressoFaseRepo
                 .findByUsuarioIdAndFaseId(usuario.getId(), faseId)
                 .map(ProgressoFase::getDesafioTentativas)
-                .orElse((short) 0);
+                .orElse((short) 0) + 1);
+
+        ResultadoCheckpoint resultado =
+                progressoService.avaliarCheckpointDesafio(usuario, faseId);
 
         int acertos = respostaRepo.contarAcertosDesafio(
                 usuario.getId(), faseId, tentativa);

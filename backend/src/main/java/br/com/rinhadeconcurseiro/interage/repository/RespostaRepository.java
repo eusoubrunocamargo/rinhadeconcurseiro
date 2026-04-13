@@ -2,6 +2,7 @@ package br.com.rinhadeconcurseiro.interage.repository;
 
 import br.com.rinhadeconcurseiro.interage.entity.Resposta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface RespostaRepository
@@ -35,6 +36,11 @@ extends JpaRepository<Resposta, Long> {
             Long usuarioId,
             Long faseId
     );
+
+    //apagar respostas da prática ao resetar (evita acumulação entre tentativas)
+    @Modifying
+    @Query("DELETE FROM Resposta r WHERE r.usuario.id = :usuarioId AND r.fase.id = :faseId AND r.bloco = 'PRATICA'")
+    void deletePraticaByUsuarioIdAndFaseId(Long usuarioId, Long faseId);
 
     //contar acertos do desafio em uma tentativa específica
     @Query("""
