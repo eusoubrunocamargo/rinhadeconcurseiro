@@ -1,5 +1,7 @@
 # 🏆 Rinha de Concurseiro
 
+> LIVE DEMO: https://rinha-de-concurseiro.up.railway.app/
+
 > A gamified mock-exam platform to prepare for the **Brazilian Chamber of Deputies** civil-service exam, featuring **real-time question duels**, ranking, performance analytics and social login.
 
 A full-stack product built end to end — a **Spring Boot** REST + WebSocket API and a **React 19** single-page application — designed to make studying for civil-service exams competitive and social.
